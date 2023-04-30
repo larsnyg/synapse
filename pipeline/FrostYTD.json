@@ -1,0 +1,199 @@
+{
+	"name": "FrostYTD",
+	"properties": {
+		"activities": [
+			{
+				"name": "Check Folder Exists",
+				"type": "GetMetadata",
+				"dependsOn": [
+					{
+						"activity": "Lookup parameters",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "Json",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": {
+								"value": "coalesce(null)",
+								"type": "Expression"
+							},
+							"Directory": "raw_json",
+							"Container": "frost"
+						}
+					},
+					"fieldList": [
+						"exists"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "JsonReadSettings"
+					}
+				}
+			},
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Check Folder Exists",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "@{concat('v0.jsonld?', concat('sources=', activity('Lookup parameters').output.firstRow.sources), '&', concat('elements=', activity('Lookup parameters').output.firstRow.elements), '&', concat('referencetime=2023'))}"
+					},
+					{
+						"name": "Destination",
+						"value": "@{'frost'}/@{'raw_json'}/@{concat('historic', utcnow('yyyy-MM'), '.json')}"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "FrostRestAPI",
+						"type": "DatasetReference",
+						"parameters": {
+							"sources": {
+								"value": "@concat('sources=', activity('Lookup parameters').output.firstRow.sources)",
+								"type": "Expression"
+							},
+							"referencetime": {
+								"value": "@concat('referencetime=',getPastTime(1, 'Year'), '/', utcnow('yyyy-MM-dd'))",
+								"type": "Expression"
+							},
+							"elements": {
+								"value": "@concat('elements=', activity('Lookup parameters').output.firstRow.elements)",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Json",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": {
+								"value": "@concat('historic', utcnow('yyyy-MM'), '.json')",
+								"type": "Expression"
+							},
+							"Directory": "raw_json",
+							"Container": "frost"
+						}
+					}
+				]
+			},
+			{
+				"name": "Lookup parameters",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "Meta",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Data flow1",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Copy data1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"folder": {
+			"name": "FrostPipelines_Simple"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-04-30T21:48:20Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

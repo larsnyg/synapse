@@ -138,14 +138,15 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "Raw_Files",
+									"referenceName": "Json",
 									"type": "DatasetReference",
 									"parameters": {
-										"Directory": "/",
 										"FileName": {
-											"value": "@concat(subtractFromTime(utcnow(), add(item(),1), 'Month', 'yyyy-MM'),'.json')",
+											"value": "@concat('historic', utcnow('yyyy-MM'), '.json')",
 											"type": "Expression"
-										}
+										},
+										"Directory": "raw_json",
+										"Container": "frost"
 									}
 								}
 							]
@@ -178,17 +179,17 @@
 						}
 					},
 					"dataset": {
-						"referenceName": "MetaJSON",
+						"referenceName": "Meta",
 						"type": "DatasetReference"
 					}
 				}
 			}
 		],
 		"folder": {
-			"name": "FrostPipelines"
+			"name": "FrostPipelines_Complex"
 		},
 		"annotations": [],
-		"lastPublishTime": "2023-04-11T20:07:25Z"
+		"lastPublishTime": "2023-04-30T19:48:33Z"
 	},
 	"type": "Microsoft.Synapse/workspaces/pipelines"
 }

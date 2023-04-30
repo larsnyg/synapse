@@ -27,7 +27,7 @@
 						}
 					},
 					"dataset": {
-						"referenceName": "MetaJSON",
+						"referenceName": "Meta",
 						"type": "DatasetReference"
 					}
 				}
@@ -53,8 +53,16 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "Raw_File_Container",
-						"type": "DatasetReference"
+						"referenceName": "Json",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": {
+								"value": "coalesce(null)",
+								"type": "Expression"
+							},
+							"Directory": "raw_json",
+							"Container": "frost"
+						}
 					},
 					"fieldList": [
 						"exists"
@@ -211,14 +219,15 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "Raw_Files",
+									"referenceName": "Json",
 									"type": "DatasetReference",
 									"parameters": {
-										"Directory": "/",
 										"FileName": {
-											"value": "@concat(utcnow('yyyy-MM'),'.json')",
+											"value": "@concat(utcnow('yyyy-MM'), '.json')",
 											"type": "Expression"
-										}
+										},
+										"Directory": "raw_json",
+										"Container": "frost"
 									}
 								}
 							]
@@ -247,8 +256,29 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "Json to parquet",
-						"type": "DataFlowReference"
+						"referenceName": "JsonToParquet",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"source1": {
+								"FileName": "*.json",
+								"Directory": "raw_json",
+								"Container": "frost"
+							},
+							"sink1": {
+								"Container": "frost",
+								"Directory": "business",
+								"FileName": "@coalesce(null)"
+							}
+						},
+						"linkedServiceParameters": {
+							"sink1": {
+								"schemaLinkedService": {
+									"Container": "frost",
+									"Directory": "business",
+									"FileName": "@coalesce(null)"
+								}
+							}
+						}
 					},
 					"compute": {
 						"coreCount": 8,
@@ -259,10 +289,10 @@
 			}
 		],
 		"folder": {
-			"name": "FrostPipelines"
+			"name": "FrostPipelines_Complex"
 		},
 		"annotations": [],
-		"lastPublishTime": "2023-04-11T20:07:30Z"
+		"lastPublishTime": "2023-04-30T19:48:39Z"
 	},
 	"type": "Microsoft.Synapse/workspaces/pipelines"
 }

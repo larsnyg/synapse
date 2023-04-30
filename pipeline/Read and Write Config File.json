@@ -29,15 +29,11 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "Raw_File_Container",
+						"referenceName": "Meta",
 						"type": "DatasetReference"
 					},
 					"fieldList": [
-						"itemName",
-						"itemType",
-						"lastModified",
-						"childItems",
-						"childItems"
+						"exists"
 					],
 					"storeSettings": {
 						"type": "AzureBlobFSReadSettings",
@@ -82,7 +78,7 @@
 			"name": "temp"
 		},
 		"annotations": [],
-		"lastPublishTime": "2023-04-12T10:06:01Z"
+		"lastPublishTime": "2023-04-30T18:34:27Z"
 	},
 	"type": "Microsoft.Synapse/workspaces/pipelines"
 }

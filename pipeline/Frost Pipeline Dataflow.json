@@ -16,8 +16,23 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "Json to parquet",
-						"type": "DataFlowReference"
+						"referenceName": "JsonToParquet",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"source1": {
+								"FileName": {
+									"value": "@coalesce(null)",
+									"type": "Expression"
+								},
+								"Directory": "raw_json",
+								"Container": "frost"
+							},
+							"sink1": {
+								"Container": "frost",
+								"Directory": "business",
+								"FileName": "@coalesce(null)"
+							}
+						}
 					},
 					"compute": {
 						"coreCount": 8,
@@ -31,7 +46,7 @@
 			"name": "temp"
 		},
 		"annotations": [],
-		"lastPublishTime": "2023-04-10T08:54:58Z"
+		"lastPublishTime": "2023-04-30T18:49:32Z"
 	},
 	"type": "Microsoft.Synapse/workspaces/pipelines"
 }
