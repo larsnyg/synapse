@@ -1,0 +1,20 @@
+{
+	"name": "Create_View_Frost_API",
+	"properties": {
+		"folder": {
+			"name": "Other"
+		},
+		"content": {
+			"query": "-- create external data source Frost\n-- with ( location = 'https://dlsingraphic01.blob.core.windows.net/business' );\n-- go\n\n-- CREATE LOGIN Mary WITH PASSWORD = 'Wd)NImGbigSMDLw';\n\n-- CREATE LOGIN [syn-ingraphic-01] FROM EXTERNAL PROVIDER;\n-- CREATE USER [syn-ingraphic-01] FROM EXTERNAL PROVIDER\n-- ALTER ROLE db_datareader ADD MEMBER [syn-ingraphic-01]\n-- ALTER ROLE db_owner ADD MEMBER [syn-ingraphic-01];\n\nUSE [Demo];\nGO\n\nDROP VIEW IF EXISTS FrostData;\nGO\n\n\ncreate view FrostData \nas \nselect * \nfrom openrowset(\n        bulk '/2023-03/2023-03-30/*', \n        data_source = 'Frost', \n        format = 'parquet'\n        ) as rows\n\n\ncreate view [dbo].[FrostData] as\nselect * \nfrom openrowset(\n        bulk 'https://dlsingraphic01.blob.core.windows.net/business/2023-03/2023-03-30/*', \n        format = 'parquet'\n        ) as rows",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "Demo",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

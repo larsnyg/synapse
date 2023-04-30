@@ -1,0 +1,37 @@
+{
+	"name": "FrostREST",
+	"type": "Microsoft.Synapse/workspaces/linkedservices",
+	"properties": {
+		"parameters": {
+			"sources": {
+				"type": "string"
+			},
+			"referencetime": {
+				"type": "string"
+			},
+			"elements": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://60f59325-4d4f-4c16-b41a-8f9932cb8217@frost.met.no/observations/v0.jsonld?",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Basic",
+			"userName": "60f59325-4d4f-4c16-b41a-8f9932cb8217",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault1",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "FrostAPI1"
+			}
+		},
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

@@ -1,0 +1,240 @@
+{
+	"name": "Frost API python",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "frost",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "91d67e71-7965-4b65-842c-39af04905e06"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/7b03814f-5f7f-40a4-96f4-625d301afef0/resourceGroups/rg-ingraphic-1/providers/Microsoft.Synapse/workspaces/syn-ingraphic-01/bigDataPools/frost",
+				"name": "frost",
+				"type": "Spark",
+				"endpoint": "https://syn-ingraphic-01.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/frost",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"# Libraries needed (pandas is not standard and must be installed in Python)\r\n",
+					"import requests\r\n",
+					"import pandas as pd\r\n",
+					"from notebookutils import mssparkutils\r\n",
+					"from datetime import date\r\n",
+					"\r\n",
+					"# Insert your own client ID here CHECK\r\n",
+					"client_id = mssparkutils.credentials.getSecretWithLS(\"AzureKeyVault1\", \"FrostAPI1\")"
+				],
+				"execution_count": 22
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"endpoint = 'https://frost.met.no/observations/v0.jsonld'\r\n",
+					"parameters = {\r\n",
+					"    'sources': 'SN18315,SN44640,SN50570,SN10380',\r\n",
+					"    'elements': 'mean(air_temperature P1D),min(air_temperature P1D),max(air_temperature P1D)',\r\n",
+					"    'referencetime': '2018-04-01/' + str(date.today()),\r\n",
+					"}"
+				],
+				"execution_count": 67
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import json\r\n",
+					"# Issue an HTTP GET request\r\n",
+					"r = requests.get(endpoint, parameters, auth=(client_id,''))\r\n",
+					"# Extract JSON data\r\n",
+					"json_data = r.json()\r\n",
+					"\r\n",
+					"# Serializing json and write to raw folder\r\n",
+					"json_object = json.dumps(json_data, indent=4)\r\n",
+					"\r\n",
+					"# Check if folder exist, if not create\r\n",
+					"mssparkutils.fs.mkdirs('abfss://raw@dlsingraphic01.dfs.core.windows.net/' + date.today().strftime('%Y-%m'))\r\n",
+					"\r\n",
+					"# Write the json_object\r\n",
+					"mssparkutils.fs.put('abfss://raw@dlsingraphic01.dfs.core.windows.net/' + date.today().strftime('%Y-%m') + \r\n",
+					"    '/json_' + date.today().strftime('%Y-%m-%d'), json_object, True)"
+				],
+				"execution_count": 68
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Check if the request worked, print out any errors\r\n",
+					"if r.status_code == 200:\r\n",
+					"    data = json_data['data']\r\n",
+					"    print('Data retrieved from frost.met.no!')\r\n",
+					"else:\r\n",
+					"    print('Error! Returned status code %s' % r.status_code)\r\n",
+					"    print('Message: %s' % json_data['error']['message'])\r\n",
+					"    print('Reason: %s' % json_data['error']['reason'])"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# This will return a Dataframe with all of the observations in a table format\r\n",
+					"df = pd.DataFrame()\r\n",
+					"for i in range(len(data)):\r\n",
+					"    row = pd.DataFrame(data[i]['observations'])\r\n",
+					"    row['referenceTime'] = data[i]['referenceTime']\r\n",
+					"    row['sourceId'] = data[i]['sourceId']\r\n",
+					"    df = df.append(row)\r\n",
+					"\r\n",
+					"df = df.reset_index()"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# These additional columns will be kept\r\n",
+					"columns = ['sourceId','referenceTime','elementId','value']\r\n",
+					"df2 = df[columns].copy()\r\n",
+					"# Convert the time value to something Python understands\r\n",
+					"df2['referenceTime'] = pd.to_datetime(df2['referenceTime'])\r\n",
+					"df2.rename(columns = {'referenceTime':'time'}, inplace = True)\r\n",
+					"df2[\"sourceId\"] = df2[\"sourceId\"].replace(':0', '', regex=True)"
+				],
+				"execution_count": 71
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"microsoft": {
+						"language": "python"
+					}
+				},
+				"source": [
+					"%%pyspark\r\n",
+					"dfSpark = spark.createDataFrame(df2)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfSpark.write.parquet('abfss://business@dlsingraphic01.dfs.core.windows.net/' + date.today().strftime('%Y-%m') + \r\n",
+					"    '/' + date.today().strftime('%Y-%m-%d'))"
+				],
+				"execution_count": 74
+			}
+		]
+	}
+}

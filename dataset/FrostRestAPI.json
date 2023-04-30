@@ -1,0 +1,44 @@
+{
+	"name": "FrostRestAPI",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "FrostREST",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"sources": {
+					"value": "@dataset().sources",
+					"type": "Expression"
+				},
+				"referencetime": {
+					"value": "@dataset().referencetime",
+					"type": "Expression"
+				},
+				"elements": {
+					"value": "@dataset().elements",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"sources": {
+				"type": "string"
+			},
+			"referencetime": {
+				"type": "string"
+			},
+			"elements": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat('v0.jsonld?', dataset().sources, '&', dataset().elements, '&', dataset().referencetime)",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

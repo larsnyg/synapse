@@ -1,0 +1,37 @@
+{
+	"name": "Frost Pipeline Dataflow",
+	"properties": {
+		"activities": [
+			{
+				"name": "Convert Json to parquet",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Json to parquet",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"folder": {
+			"name": "temp"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-04-10T08:54:58Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

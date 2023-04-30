@@ -1,0 +1,326 @@
+{
+	"name": "MainFrost_lookup_from_SQL_Table",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup no Months",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzureSynapseAnalyticsTable1",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Check Folder Exists",
+				"type": "GetMetadata",
+				"dependsOn": [
+					{
+						"activity": "Lookup no Months",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Lookup Sources",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Lookup Elements",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "Raw_File_Container",
+						"type": "DatasetReference"
+					},
+					"fieldList": [
+						"exists"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "JsonReadSettings"
+					}
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Check Folder Exists",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@activity('Check Folder Exists').output.exists",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Download Complete History",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "Download Complete History",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "Copy This Month",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "RestSource",
+									"httpRequestTimeout": "00:01:40",
+									"requestInterval": "00.00:00:00.010",
+									"requestMethod": "GET",
+									"paginationRules": {
+										"supportRFC5988": "true"
+									}
+								},
+								"sink": {
+									"type": "JsonSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "JsonWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"mappings": [
+										{
+											"source": {
+												"path": "['sourceId']"
+											},
+											"sink": {
+												"path": "sourceId"
+											}
+										},
+										{
+											"source": {
+												"path": "['referenceTime']"
+											},
+											"sink": {
+												"path": "referenceTime"
+											}
+										},
+										{
+											"source": {
+												"path": "['observations'][0]['elementId']"
+											},
+											"sink": {
+												"path": "elementMin"
+											}
+										},
+										{
+											"source": {
+												"path": "['observations'][0]['value']"
+											},
+											"sink": {
+												"path": "Min"
+											}
+										},
+										{
+											"source": {
+												"path": "['observations'][1]['elementId']"
+											},
+											"sink": {
+												"path": "elementMax"
+											}
+										},
+										{
+											"source": {
+												"path": "['observations'][1]['value']"
+											},
+											"sink": {
+												"path": "Max"
+											}
+										}
+									],
+									"collectionReference": "$['data']"
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "FrostRestAPI",
+									"type": "DatasetReference",
+									"parameters": {
+										"sources": {
+											"value": "@concat('sources=', string(activity('Lookup Sources').output.value[0].Sources))\n\n",
+											"type": "Expression"
+										},
+										"referencetime": {
+											"value": "@concat('referencetime=', utcnow('yyyy-MM'), '/', getFutureTime(1, 'Month', 'yyyy-MM'))\n\n",
+											"type": "Expression"
+										},
+										"elements": {
+											"value": "@concat('elements=', string(activity('Lookup Elements').output.value[0].elements))",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "Raw_Files",
+									"type": "DatasetReference",
+									"parameters": {
+										"Directory": "/",
+										"FileName": {
+											"value": "@concat(utcnow('yyyy-MM'),'.json')",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "Save to Parquet",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "If Condition1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Json to parquet",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Lookup Sources",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "SELECT STRING_AGG(ID, ', ') AS 'Sources'\nFROM [dbo].[sources];",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzureSynapseAnalyticsTable2",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Lookup Elements",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "SELECT STRING_AGG(elements, ', ')  AS 'elements'\nFROM [dbo].[elements];",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzureSynapseAnalyticsTable3",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			}
+		],
+		"folder": {
+			"name": "FrostPipelines"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-04-11T20:07:32Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

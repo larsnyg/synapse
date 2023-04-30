@@ -1,0 +1,213 @@
+{
+	"name": "Frost API R",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "frost",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "cf285524-4011-4dde-bf1d-e17147944e0e"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "r"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/7b03814f-5f7f-40a4-96f4-625d301afef0/resourceGroups/rg-ingraphic-1/providers/Microsoft.Synapse/workspaces/syn-ingraphic-01/bigDataPools/frost",
+				"name": "frost",
+				"type": "Spark",
+				"endpoint": "https://syn-ingraphic-01.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/frost",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"library(tidyverse)\r\n",
+					"library(notebookutils)\r\n",
+					"\r\n",
+					"# Insert your own client ID here\r\n",
+					"client_id_secret <- mssparkutils.credentials.getSecret(\"FrostAPISecrets\", \"FrostAPI1\", \"AzureKeyVault1\")\r\n",
+					"\r\n",
+					"# retrieve the job-id from the Spark environment \r\n",
+					"jobId <- mssparkutils.env.getJobId() "
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Mount folder for saving raw json files\r\n",
+					"mssparkutils.fs.unmount('/raw') \r\n",
+					"mssparkutils.fs.mount('abfss://raw@dlsingraphic01.dfs.core.windows.net','/raw') "
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Use this to get json from Notebook\r\n",
+					"# Define endpoint and parameters and get data\r\n",
+					"endpoint <- paste0(\"https://\", client_id_secret, \"@frost.met.no/observations/v0.jsonld\")\r\n",
+					"sources <- 'SN18315,SN44640,SN50570,SN10380'\r\n",
+					"# elements <- 'mean(air_temperature P1D)'\r\n",
+					"elements <- 'mean(air_temperature P1D),min(air_temperature P1D),max(air_temperature P1D),min(air_temperature P1Y),max(air_temperature P1Y)'\r\n",
+					"qualities <- 0\r\n",
+					"referenceTime <- paste0('2010-08-01/', Sys.Date())\r\n",
+					"# Build the URL to Frost\r\n",
+					"url <- paste0(\r\n",
+					"    endpoint, \"?\",\r\n",
+					"     \"sources=\", sources,\r\n",
+					"    \"&referencetime=\", referenceTime,\r\n",
+					"    \"&elements=\", elements,\r\n",
+					"    \"&qualities=\", qualities\r\n",
+					")\r\n",
+					"\r\n",
+					"# Issue an HTTP GET request and extract JSON data\r\n",
+					"xs <- try(jsonlite::fromJSON(URLencode(url),flatten=T))"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Write raw json\r\n",
+					"# Read json file from adls\r\n",
+					"write(jsonlite::toJSON(xs), paste0(\"/synfs/\", jobId, \"/raw/data/data.json\"))"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Check if the request worked, print out any errors, get observations\r\n",
+					"if (class(xs) != 'try-error') {\r\n",
+					"    df <- unnest(xs$data, cols = c(observations))\r\n",
+					"    ## write json from Notebook if necessary\r\n",
+					"    # write(jsonlite::toJSON(xs), paste0(\"/synfs/\",jobId, \"/raw/output.json\"))  \r\n",
+					"    print(\"Data retrieved from frost.met.no and raw json file written to storage!\")\r\n",
+					"} else {\r\n",
+					"    print(\"Error: the data retrieval was not successful!\")\r\n",
+					"}"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Data cleaning \n",
+					"df <- df %>% mutate(time = referenceTime %>% as.Date(format = \"%Y-%m-%dT%H:%M:%S.000Z\")) %>% \n",
+					"        select(sourceId, time, elementId, value) %>%\n",
+					"        mutate(sourceId = gsub(\":0\", \"\", sourceId))"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"dfSpark <- createDataFrame(df)  \n",
+					"write.df(dfSpark, path = 'abfss://business@dlsingraphic01.dfs.core.windows.net/data', source = \"parquet\", mode = \"overwrite\")"
+				],
+				"execution_count": 7
+			}
+		]
+	}
+}

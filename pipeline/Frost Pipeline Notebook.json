@@ -1,0 +1,76 @@
+{
+	"name": "Frost Pipeline Notebook",
+	"properties": {
+		"activities": [
+			{
+				"name": "Python Notebook Frost API",
+				"type": "SynapseNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "Frost API python",
+						"type": "NotebookReference"
+					},
+					"snapshot": true,
+					"sparkPool": {
+						"referenceName": "frost",
+						"type": "BigDataPoolReference"
+					},
+					"conf": {
+						"spark.dynamicAllocation.enabled": null,
+						"spark.dynamicAllocation.minExecutors": null,
+						"spark.dynamicAllocation.maxExecutors": null
+					},
+					"numExecutors": null
+				}
+			},
+			{
+				"name": "Create View in Serverless SQL",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "Python Notebook Frost API",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "AzureSynapseAnalytics1",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "NonQuery",
+							"text": "alter view [dbo].[FrostData] as\nselect * \nfrom openrowset(\n        bulk 'https://dlsingraphic01.blob.core.windows.net/business/2023-03/2023-03-30/*', \n        format = 'parquet'\n        ) as rows"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			}
+		],
+		"folder": {
+			"name": "temp"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-04-10T08:55:01Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

@@ -1,0 +1,36 @@
+{
+	"name": "AzureSynapseAnalyticsTable2",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSynapseAnalytics1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "By",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Lat",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Lon",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "ID",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "sources"
+		}
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

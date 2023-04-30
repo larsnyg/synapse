@@ -1,0 +1,20 @@
+{
+	"name": "SQL script 1",
+	"properties": {
+		"folder": {
+			"name": "Other"
+		},
+		"content": {
+			"query": "SELECT ',' + [elements]\n FROM [dbo].[elements]\n\n SELECT STRING_AGG(elements, ', ') \nFROM [dbo].[elements];\n\nSELECT STRING_AGG(Source, ', ')  AS 'Source'\nFROM [dbo].[sources];\n\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "Demo",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

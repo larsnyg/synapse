@@ -1,0 +1,35 @@
+{
+	"name": "Logic app",
+	"properties": {
+		"activities": [
+			{
+				"name": "Web1",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-00.norwayeast.logic.azure.com:443/workflows/b1d0934a1a6a47d8838a75f99070e898/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=2uVFx4GSEK38Iypq8Kr2TwdDSxHPpAtsj84oNsbLfk4",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"body": "{\n    \"properties\": {\n        \"email_body\": {\n            \"type\": \"string\"\n        },\n        \"subject\": {\n            \"type\": \"string\"\n        },\n        \"to\": {\n            \"type\": \"string\"\n        }\n    },\n    \"type\": \"object\"\n}\n}"
+				}
+			}
+		],
+		"folder": {
+			"name": "temp"
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-03-30T17:05:55Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}
