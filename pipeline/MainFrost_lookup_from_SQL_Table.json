@@ -58,10 +58,6 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"dataset": {
-						"referenceName": "Raw_File_Container",
-						"type": "DatasetReference"
-					},
 					"fieldList": [
 						"exists"
 					],

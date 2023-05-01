@@ -196,7 +196,10 @@
 							"sink1": {
 								"Container": "frost",
 								"Directory": "business",
-								"FileName": "coalesce(null)"
+								"FileName": {
+									"value": "@coalesce(null)",
+									"type": "Expression"
+								}
 							}
 						}
 					},
