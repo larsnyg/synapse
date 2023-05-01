@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"value": "syn-ingraphic-01"
+		},
+		"AzureDataLakeStorage2_accountKey": {
+			"value": ""
+		},
+		"AzureSynapseAnalytics1_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=syn-ingraphic-01-ondemand.sql.azuresynapse.net;Initial Catalog=Demo"
+		},
+		"syn-ingraphic-01-WorkspaceDefaultSqlServer_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:syn-ingraphic-01.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"AzureDataLakeStorage2_properties_typeProperties_url": {
+			"value": "https://dlsingraphic01.dfs.core.windows.net/"
+		},
+		"AzureKeyVault1_properties_typeProperties_baseUrl": {
+			"value": "https://FrostAPISecrets.vault.azure.net/"
+		},
+		"FrostREST_properties_typeProperties_url": {
+			"value": "https://60f59325-4d4f-4c16-b41a-8f9932cb8217@frost.met.no/observations/v0.jsonld?"
+		},
+		"FrostREST_properties_typeProperties_userName": {
+			"value": "60f59325-4d4f-4c16-b41a-8f9932cb8217"
+		},
+		"syn-ingraphic-01-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://dlsingraphic01.dfs.core.windows.net"
+		}
+	}
+}
