@@ -23,7 +23,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "Json",
+						"referenceName": "JSON",
 						"type": "DatasetReference",
 						"parameters": {
 							"FileName": {
@@ -118,7 +118,7 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "Json",
+						"referenceName": "JSON",
 						"type": "DatasetReference",
 						"parameters": {
 							"FileName": {
@@ -156,8 +156,16 @@
 						}
 					},
 					"dataset": {
-						"referenceName": "Meta",
-						"type": "DatasetReference"
+						"referenceName": "JSON",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": "meta.json",
+							"Directory": {
+								"value": "@coalesce(null)",
+								"type": "Expression"
+							},
+							"Container": "meta"
+						}
 					}
 				}
 			},

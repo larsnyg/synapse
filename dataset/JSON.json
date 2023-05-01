@@ -1,5 +1,5 @@
 {
-	"name": "Json",
+	"name": "JSON",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureDataLakeStorage2",
