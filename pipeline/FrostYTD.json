@@ -162,7 +162,7 @@
 				}
 			},
 			{
-				"name": "Data flow1",
+				"name": "flow1",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
@@ -181,6 +181,22 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
+					"dataflow": {
+						"referenceName": "FlattenFrost",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"source1": {
+								"FileName": "*.json",
+								"Directory": "raw_json",
+								"Container": "frost"
+							},
+							"sink1": {
+								"Container": "frost",
+								"Directory": "business",
+								"FileName": "coalesce(null)"
+							}
+						}
+					},
 					"compute": {
 						"coreCount": 8,
 						"computeType": "General"

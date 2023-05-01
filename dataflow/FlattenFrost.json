@@ -1,0 +1,91 @@
+{
+	"name": "FlattenFrost",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Json",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Parquet",
+						"type": "DatasetReference"
+					},
+					"name": "sink1",
+					"rejectedDataLinkedService": {
+						"referenceName": "AzureDataLakeStorage2",
+						"type": "LinkedServiceReference"
+					}
+				}
+			],
+			"transformations": [
+				{
+					"name": "flatten1"
+				},
+				{
+					"name": "flatten2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          {@context} as string,",
+				"          {@type} as string,",
+				"          apiVersion as string,",
+				"          createdAt as timestamp,",
+				"          currentItemCount as short,",
+				"          currentLink as string,",
+				"          data as (observations as (elementId as string, exposureCategory as short, level as (levelType as string, unit as string, value as short), performanceCategory as string, qualityCode as short, timeOffset as string, timeResolution as string, timeSeriesId as boolean, unit as string, value as double)[], referenceTime as string, sourceId as string)[],",
+				"          itemsPerPage as short,",
+				"          license as string,",
+				"          offset as boolean,",
+				"          queryTime as double,",
+				"          totalItemCount as short",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'documentPerLine') ~> source1",
+				"source1 foldDown(unroll(data, data),",
+				"     mapColumn(",
+				"          observations = data.observations,",
+				"          referenceTime = data.referenceTime,",
+				"          sourceId = data.sourceId",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flatten1",
+				"flatten1 foldDown(unroll(observations, observations),",
+				"     mapColumn(",
+				"          elementId = observations.elementId,",
+				"          exposureCategory = observations.exposureCategory,",
+				"          level = observations.level,",
+				"          performanceCategory = observations.performanceCategory,",
+				"          qualityCode = observations.qualityCode,",
+				"          timeOffset = observations.timeOffset,",
+				"          timeResolution = observations.timeResolution,",
+				"          timeSeriesId = observations.timeSeriesId,",
+				"          unit = observations.unit,",
+				"          value = observations.value,",
+				"          referenceTime,",
+				"          sourceId",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flatten2",
+				"flatten2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
+			]
+		}
+	}
+}
