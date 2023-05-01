@@ -859,7 +859,7 @@
 										"type": "Expression"
 									},
 									"referencetime": {
-										"value": "@concat('referencetime=',getPastTime(1, 'Year'), '/', utcnow('yyyy-MM-dd'))",
+										"value": "@concat('referencetime=',getPastTime(3, 'Month'), '/', utcnow('yyyy-MM-dd'))",
 										"type": "Expression"
 									},
 									"elements": {
@@ -941,7 +941,10 @@
 								"parameters": {},
 								"datasetParameters": {
 									"source1": {
-										"FileName": "*.json",
+										"FileName": {
+											"value": "@coalesce(null)",
+											"type": "Expression"
+										},
 										"Directory": "raw_json",
 										"Container": "frost"
 									},
@@ -4202,7 +4205,8 @@
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false,",
-						"     documentForm: 'documentPerLine') ~> source1",
+						"     documentForm: 'documentPerLine',",
+						"     wildcardPaths:['raw_json/*.json']) ~> source1",
 						"source1 foldDown(unroll(data, data),",
 						"     mapColumn(",
 						"          observations = data.observations,",
