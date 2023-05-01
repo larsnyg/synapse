@@ -188,7 +188,7 @@
 									],
 									"outputs": [
 										{
-											"referenceName": "Json",
+											"referenceName": "JSON",
 											"type": "DatasetReference",
 											"parameters": {
 												"FileName": {
@@ -229,9 +229,16 @@
 								}
 							},
 							"dataset": {
-								"referenceName": "Meta",
+								"referenceName": "JSON",
 								"type": "DatasetReference",
-								"parameters": {}
+								"parameters": {
+									"FileName": "meta.json",
+									"Directory": {
+										"value": "@coalesce(null)",
+										"type": "Expression"
+									},
+									"Container": "meta"
+								}
 							}
 						}
 					}
@@ -247,9 +254,8 @@
 				"lastPublishTime": "2023-04-30T19:48:33Z"
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/datasets/Meta')]",
-				"[concat(variables('workspaceId'), '/datasets/FrostRestAPI')]",
-				"[concat(variables('workspaceId'), '/datasets/Json')]"
+				"[concat(variables('workspaceId'), '/datasets/JSON')]",
+				"[concat(variables('workspaceId'), '/datasets/FrostRestAPI')]"
 			]
 		},
 		{
@@ -776,7 +782,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataset": {
-								"referenceName": "Json",
+								"referenceName": "JSON",
 								"type": "DatasetReference",
 								"parameters": {
 									"FileName": {
@@ -871,7 +877,7 @@
 						],
 						"outputs": [
 							{
-								"referenceName": "Json",
+								"referenceName": "JSON",
 								"type": "DatasetReference",
 								"parameters": {
 									"FileName": {
@@ -909,9 +915,16 @@
 								}
 							},
 							"dataset": {
-								"referenceName": "Meta",
+								"referenceName": "JSON",
 								"type": "DatasetReference",
-								"parameters": {}
+								"parameters": {
+									"FileName": "meta.json",
+									"Directory": {
+										"value": "@coalesce(null)",
+										"type": "Expression"
+									},
+									"Container": "meta"
+								}
 							}
 						}
 					},
@@ -978,9 +991,8 @@
 				"lastPublishTime": "2023-04-30T21:48:20Z"
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/datasets/Json')]",
+				"[concat(variables('workspaceId'), '/datasets/JSON')]",
 				"[concat(variables('workspaceId'), '/datasets/FrostRestAPI')]",
-				"[concat(variables('workspaceId'), '/datasets/Meta')]",
 				"[concat(variables('workspaceId'), '/dataflows/FlattenFrost')]"
 			]
 		},
@@ -1711,9 +1723,16 @@
 								}
 							},
 							"dataset": {
-								"referenceName": "Meta",
+								"referenceName": "JSON",
 								"type": "DatasetReference",
-								"parameters": {}
+								"parameters": {
+									"FileName": "meta.json",
+									"Directory": {
+										"value": "@coalesce(null)",
+										"type": "Expression"
+									},
+									"Container": "meta"
+								}
 							}
 						}
 					},
@@ -1738,7 +1757,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataset": {
-								"referenceName": "Json",
+								"referenceName": "JSON",
 								"type": "DatasetReference",
 								"parameters": {
 									"FileName": {
@@ -1905,7 +1924,7 @@
 									],
 									"outputs": [
 										{
-											"referenceName": "Json",
+											"referenceName": "JSON",
 											"type": "DatasetReference",
 											"parameters": {
 												"FileName": {
@@ -1987,104 +2006,10 @@
 				"lastPublishTime": "2023-04-30T19:48:39Z"
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/datasets/Meta')]",
-				"[concat(variables('workspaceId'), '/datasets/Json')]",
+				"[concat(variables('workspaceId'), '/datasets/JSON')]",
 				"[concat(variables('workspaceId'), '/dataflows/JsonToParquet')]",
 				"[concat(variables('workspaceId'), '/pipelines/Download Complete History')]",
 				"[concat(variables('workspaceId'), '/datasets/FrostRestAPI')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/Read and Write Config File')]",
-			"type": "Microsoft.Synapse/workspaces/pipelines",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"activities": [
-					{
-						"name": "Set startDate",
-						"type": "SetVariable",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "startDate",
-							"value": {
-								"value": "@utcnow('yyyy-MM-dd')",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "Get Metadata1",
-						"type": "GetMetadata",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "Meta",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"fieldList": [
-								"exists"
-							],
-							"storeSettings": {
-								"type": "AzureBlobFSReadSettings",
-								"recursive": true,
-								"enablePartitionDiscovery": false
-							},
-							"formatSettings": {
-								"type": "JsonReadSettings"
-							}
-						}
-					},
-					{
-						"name": "Set LastFile",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "Get Metadata1",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "lastFile",
-							"value": {
-								"value": "@replace(activity('Get Metadata1').output.childItems[add(length(activity('Get Metadata1').output.childItems),-1)].name, '.json', '')\n",
-								"type": "Expression"
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"variables": {
-					"startDate": {
-						"type": "String"
-					},
-					"lastFile": {
-						"type": "String"
-					}
-				},
-				"folder": {
-					"name": "temp"
-				},
-				"annotations": [],
-				"lastPublishTime": "2023-04-30T18:34:27Z"
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/datasets/Meta')]"
 			]
 		},
 		{
@@ -2178,32 +2103,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/linkedServices/AzureSynapseAnalytics1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/CSV_Config')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorage2",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileSystem": "meta"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage2')]"
 			]
 		},
 		{
@@ -2521,7 +2420,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/Json')]",
+			"name": "[concat(parameters('workspaceName'), '/JSON')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
@@ -2560,98 +2459,6 @@
 					}
 				},
 				"schema": {}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage2')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/Meta')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorage2",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": "meta.json",
-						"fileSystem": "meta"
-					}
-				},
-				"schema": {
-					"type": "object",
-					"properties": {
-						"elements": {
-							"type": "array",
-							"items": {
-								"type": "string"
-							}
-						},
-						"referencetime": {
-							"type": "array",
-							"items": {
-								"type": "string"
-							}
-						},
-						"sources": {
-							"type": "array",
-							"items": {
-								"type": "string"
-							}
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage2')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/MetaJSON')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorage2",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": "meta.json",
-						"fileSystem": "meta"
-					}
-				},
-				"schema": {
-					"type": "object",
-					"properties": {
-						"elements": {
-							"type": "array",
-							"items": {
-								"type": "string"
-							}
-						},
-						"referencetime": {
-							"type": "array",
-							"items": {
-								"type": "string"
-							}
-						},
-						"sources": {
-							"type": "array",
-							"items": {
-								"type": "string"
-							}
-						}
-					}
-				}
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage2')]"
@@ -2704,30 +2511,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/Parquet1')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "syn-ingraphic-01-WorkspaceDefaultStorage",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Parquet",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileSystem": "business"
-					},
-					"compressionCodec": "snappy"
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/syn-ingraphic-01-WorkspaceDefaultStorage')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/Raw_Files')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -2761,137 +2544,6 @@
 					}
 				},
 				"schema": {}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage2')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/json_raw')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorage2",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@concat('json_', formatdatetime(utcnow(),'yyyy-MM-dd'))",
-							"type": "Expression"
-						},
-						"folderPath": {
-							"value": "@concat(formatdatetime(utcnow(),'yyyy-MM'))",
-							"type": "Expression"
-						},
-						"fileSystem": "raw"
-					}
-				},
-				"schema": {
-					"type": "object",
-					"properties": {
-						"@context": {
-							"type": "string"
-						},
-						"@type": {
-							"type": "string"
-						},
-						"apiVersion": {
-							"type": "string"
-						},
-						"license": {
-							"type": "string"
-						},
-						"createdAt": {
-							"type": "string"
-						},
-						"queryTime": {
-							"type": "number"
-						},
-						"currentItemCount": {
-							"type": "integer"
-						},
-						"itemsPerPage": {
-							"type": "integer"
-						},
-						"offset": {
-							"type": "integer"
-						},
-						"totalItemCount": {
-							"type": "integer"
-						},
-						"currentLink": {
-							"type": "string"
-						},
-						"data": {
-							"type": "array",
-							"items": {
-								"type": "object",
-								"properties": {
-									"sourceId": {
-										"type": "string"
-									},
-									"referenceTime": {
-										"type": "string"
-									},
-									"observations": {
-										"type": "array",
-										"items": {
-											"type": "object",
-											"properties": {
-												"elementId": {
-													"type": "string"
-												},
-												"value": {
-													"type": "number"
-												},
-												"unit": {
-													"type": "string"
-												},
-												"level": {
-													"type": "object",
-													"properties": {
-														"levelType": {
-															"type": "string"
-														},
-														"unit": {
-															"type": "string"
-														},
-														"value": {
-															"type": "integer"
-														}
-													}
-												},
-												"timeOffset": {
-													"type": "string"
-												},
-												"timeResolution": {
-													"type": "string"
-												},
-												"timeSeriesId": {
-													"type": "integer"
-												},
-												"performanceCategory": {
-													"type": "string"
-												},
-												"exposureCategory": {
-													"type": "string"
-												},
-												"qualityCode": {
-													"type": "integer"
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage2')]"
@@ -3763,7 +3415,7 @@
 					"sources": [
 						{
 							"dataset": {
-								"referenceName": "Json",
+								"referenceName": "JSON",
 								"type": "DatasetReference"
 							},
 							"name": "source1"
@@ -3788,6 +3440,9 @@
 						},
 						{
 							"name": "flatten2"
+						},
+						{
+							"name": "select1"
 						}
 					],
 					"scriptLines": [
@@ -3835,19 +3490,31 @@
 						"     ),",
 						"     skipDuplicateMapInputs: false,",
 						"     skipDuplicateMapOutputs: false) ~> flatten2",
-						"flatten2 sink(allowSchemaDrift: true,",
+						"flatten2 select(mapColumn(",
+						"          elementId,",
+						"          unit,",
+						"          value,",
+						"          referenceTime,",
+						"          sourceId",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'parquet',",
+						"     partitionFileNames:['frostData.parquet'],",
+						"     truncate: true,",
 						"     umask: 0022,",
 						"     preCommands: [],",
 						"     postCommands: [],",
 						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> sink1"
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sink1"
 					]
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/datasets/Json')]",
+				"[concat(variables('workspaceId'), '/datasets/JSON')]",
 				"[concat(variables('workspaceId'), '/datasets/Parquet')]",
 				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage2')]"
 			]
@@ -3909,10 +3576,6 @@
 					],
 					"sinks": [
 						{
-							"dataset": {
-								"referenceName": "Parquet1",
-								"type": "DatasetReference"
-							},
 							"name": "sink1",
 							"rejectedDataLinkedService": {
 								"referenceName": "syn-ingraphic-01-WorkspaceDefaultStorage",
@@ -3973,11 +3636,7 @@
 						"     errors: true) ~> cast1",
 						"derivedColumn1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
-						"     format: 'parquet',",
 						"     truncate: true,",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     mapColumn(",
@@ -3992,13 +3651,15 @@
 						"          0,",
 						"          year,",
 						"          month",
-						"     )) ~> sink1"
+						"     ),",
+						"     format: 'parquet',",
+						"     preCommands: [],",
+						"     postCommands: []) ~> sink1"
 					]
 				}
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/raw_files_df')]",
-				"[concat(variables('workspaceId'), '/datasets/Parquet1')]",
 				"[concat(variables('workspaceId'), '/linkedServices/syn-ingraphic-01-WorkspaceDefaultStorage')]"
 			]
 		},
@@ -4012,7 +3673,7 @@
 					"sources": [
 						{
 							"dataset": {
-								"referenceName": "Json",
+								"referenceName": "JSON",
 								"type": "DatasetReference"
 							},
 							"name": "source1"
@@ -4108,7 +3769,7 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/datasets/Json')]",
+				"[concat(variables('workspaceId'), '/datasets/JSON')]",
 				"[concat(variables('workspaceId'), '/datasets/Parquet')]",
 				"[concat(variables('workspaceId'), '/linkedServices/syn-ingraphic-01-WorkspaceDefaultStorage')]"
 			]
@@ -4630,12 +4291,12 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/Create External Tables Frost')]",
+			"name": "[concat(parameters('workspaceName'), '/CreateExternalTables')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"folder": {
-					"name": "Frost API"
+					"name": "CreateExternalTables"
 				},
 				"content": {
 					"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat] \n\tWITH ( FORMAT_TYPE = DELIMITEDTEXT ,\n\t       FORMAT_OPTIONS (\n\t\t\t FIELD_TERMINATOR = ',',\n\t\t\t USE_TYPE_DEFAULT = FALSE\n\t\t\t))\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'meta_dlsingraphic01_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [meta_dlsingraphic01_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://meta@dlsingraphic01.dfs.core.windows.net' \n\t)\nGO\n\nDROP EXTERNAL TABLE [dbo].[elements]\nGO\n\nCREATE EXTERNAL TABLE [dbo].[elements] (\n\t[elements] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'elements.csv',\n\tDATA_SOURCE = [meta_dlsingraphic01_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseDelimitedTextFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM [dbo].[elements]\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat] \n\tWITH ( FORMAT_TYPE = DELIMITEDTEXT ,\n\t       FORMAT_OPTIONS (\n\t\t\t FIELD_TERMINATOR = ',',\n\t\t\t USE_TYPE_DEFAULT = FALSE\n\t\t\t))\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'meta_dlsingraphic01_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [meta_dlsingraphic01_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://meta@dlsingraphic01.dfs.core.windows.net' \n\t)\nGO\n\nCREATE EXTERNAL TABLE [dbo].[referenceTime] (\n\t[numberOfMonths] bigint\n\t)\n\tWITH (\n\tLOCATION = 'referencetime.csv',\n\tDATA_SOURCE = [meta_dlsingraphic01_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseDelimitedTextFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM [dbo].[referenceTime]\nGO\n\nDROP EXTERNAL TABLE [dbo].[Temperatur];\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'business_dlsingraphic01_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [business_dlsingraphic01_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://business@dlsingraphic01.dfs.core.windows.net' \n\t)\nGO\n\nCREATE EXTERNAL TABLE [dbo].[Temperatur] (\n\t[referenceTime] nvarchar(4000),\n\t[sourceId] nvarchar(4000),\n\t[elementId] nvarchar(4000),\n\t[Temperature] float\n\t)\n\tWITH (\n\tLOCATION = '/',\n\tDATA_SOURCE = [business_dlsingraphic01_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM [dbo].[Temperatur]\nORDER BY referenceTime DESC\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat] \n\tWITH ( FORMAT_TYPE = DELIMITEDTEXT ,\n\t       FORMAT_OPTIONS (\n\t\t\t FIELD_TERMINATOR = ',',\n\t\t\t USE_TYPE_DEFAULT = FALSE\n\t\t\t))\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'meta_dlsingraphic01_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [meta_dlsingraphic01_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://meta@dlsingraphic01.dfs.core.windows.net' \n\t)\nGO\n\nDROP EXTERNAL TABLE [dbo].[sources]\n\nCREATE EXTERNAL TABLE [dbo].[sources] (\n\t[Source] nvarchar(4000),\n\t[Lat] float,\n\t[Lon] float,\n\t[ID] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'sources.csv',\n\tDATA_SOURCE = [meta_dlsingraphic01_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseDelimitedTextFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM [dbo].[sources]\nGO",
