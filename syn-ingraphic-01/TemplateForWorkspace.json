@@ -7,23 +7,10 @@
 			"metadata": "Workspace name",
 			"defaultValue": "syn-ingraphic-01"
 		},
-		"AzureDataLakeStorage2_accountKey": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage2'"
-		},
-		"AzureSynapseAnalytics1_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'AzureSynapseAnalytics1'",
-			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=syn-ingraphic-01-ondemand.sql.azuresynapse.net;Initial Catalog=Demo"
-		},
 		"syn-ingraphic-01-WorkspaceDefaultSqlServer_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'syn-ingraphic-01-WorkspaceDefaultSqlServer'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:syn-ingraphic-01.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
-		},
-		"AzureDataLakeStorage2_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://dlsingraphic01.dfs.core.windows.net/"
 		},
 		"AzureKeyVault1_properties_typeProperties_baseUrl": {
 			"type": "string",
@@ -725,7 +712,7 @@
 						},
 						"userProperties": [],
 						"linkedServiceName": {
-							"referenceName": "AzureSynapseAnalytics1",
+							"referenceName": "syn-ingraphic-01-WorkspaceDefaultSqlServer",
 							"type": "LinkedServiceReference"
 						},
 						"typeProperties": {
@@ -752,7 +739,7 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/notebooks/Frost API python')]",
 				"[concat(variables('workspaceId'), '/bigDataPools/frost')]",
-				"[concat(variables('workspaceId'), '/linkedServices/AzureSynapseAnalytics1')]"
+				"[concat(variables('workspaceId'), '/linkedServices/syn-ingraphic-01-WorkspaceDefaultSqlServer')]"
 			]
 		},
 		{
@@ -1975,15 +1962,6 @@
 										"Directory": "business",
 										"FileName": "@coalesce(null)"
 									}
-								},
-								"linkedServiceParameters": {
-									"sink1": {
-										"schemaLinkedService": {
-											"Container": "frost",
-											"Directory": "business",
-											"FileName": "@coalesce(null)"
-										}
-									}
 								}
 							},
 							"staging": {},
@@ -2018,7 +1996,7 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "AzureSynapseAnalytics1",
+					"referenceName": "syn-ingraphic-01-WorkspaceDefaultSqlServer",
 					"type": "LinkedServiceReference"
 				},
 				"annotations": [],
@@ -2036,7 +2014,7 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/AzureSynapseAnalytics1')]"
+				"[concat(variables('workspaceId'), '/linkedServices/syn-ingraphic-01-WorkspaceDefaultSqlServer')]"
 			]
 		},
 		{
@@ -2045,7 +2023,7 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "AzureSynapseAnalytics1",
+					"referenceName": "syn-ingraphic-01-WorkspaceDefaultSqlServer",
 					"type": "LinkedServiceReference"
 				},
 				"annotations": [],
@@ -2076,7 +2054,7 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/AzureSynapseAnalytics1')]"
+				"[concat(variables('workspaceId'), '/linkedServices/syn-ingraphic-01-WorkspaceDefaultSqlServer')]"
 			]
 		},
 		{
@@ -2085,7 +2063,7 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "AzureSynapseAnalytics1",
+					"referenceName": "syn-ingraphic-01-WorkspaceDefaultSqlServer",
 					"type": "LinkedServiceReference"
 				},
 				"annotations": [],
@@ -2102,7 +2080,7 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/AzureSynapseAnalytics1')]"
+				"[concat(variables('workspaceId'), '/linkedServices/syn-ingraphic-01-WorkspaceDefaultSqlServer')]"
 			]
 		},
 		{
@@ -2111,7 +2089,7 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorage2",
+					"referenceName": "syn-ingraphic-01-WorkspaceDefaultStorage",
 					"type": "LinkedServiceReference"
 				},
 				"parameters": {
@@ -2155,7 +2133,7 @@
 				]
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage2')]"
+				"[concat(variables('workspaceId'), '/linkedServices/syn-ingraphic-01-WorkspaceDefaultStorage')]"
 			]
 		},
 		{
@@ -2164,7 +2142,7 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorage2",
+					"referenceName": "syn-ingraphic-01-WorkspaceDefaultStorage",
 					"type": "LinkedServiceReference"
 				},
 				"annotations": [],
@@ -2368,7 +2346,7 @@
 				]
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage2')]"
+				"[concat(variables('workspaceId'), '/linkedServices/syn-ingraphic-01-WorkspaceDefaultStorage')]"
 			]
 		},
 		{
@@ -2425,7 +2403,7 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorage2",
+					"referenceName": "syn-ingraphic-01-WorkspaceDefaultStorage",
 					"type": "LinkedServiceReference"
 				},
 				"parameters": {
@@ -2461,7 +2439,7 @@
 				"schema": {}
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage2')]"
+				"[concat(variables('workspaceId'), '/linkedServices/syn-ingraphic-01-WorkspaceDefaultStorage')]"
 			]
 		},
 		{
@@ -2511,29 +2489,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/AzureDataLakeStorage2')]",
-			"type": "Microsoft.Synapse/workspaces/linkedServices",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('AzureDataLakeStorage2_properties_typeProperties_url')]",
-					"accountKey": {
-						"type": "SecureString",
-						"value": "[parameters('AzureDataLakeStorage2_accountKey')]"
-					}
-				},
-				"connectVia": {
-					"referenceName": "AutoResolveIntegrationRuntime",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/AzureKeyVault1')]",
 			"type": "Microsoft.Synapse/workspaces/linkedServices",
 			"apiVersion": "2019-06-01-preview",
@@ -2545,25 +2500,6 @@
 				}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/AzureSynapseAnalytics1')]",
-			"type": "Microsoft.Synapse/workspaces/linkedServices",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": [],
-				"type": "AzureSqlDW",
-				"typeProperties": {
-					"connectionString": "[parameters('AzureSynapseAnalytics1_connectionString')]"
-				},
-				"connectVia": {
-					"referenceName": "AutoResolveIntegrationRuntime",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
-			]
 		},
 		{
 			"name": "[concat(parameters('workspaceName'), '/FrostREST')]",
@@ -3349,11 +3285,7 @@
 								"referenceName": "Parquet",
 								"type": "DatasetReference"
 							},
-							"name": "sink1",
-							"rejectedDataLinkedService": {
-								"referenceName": "AzureDataLakeStorage2",
-								"type": "LinkedServiceReference"
-							}
+							"name": "sink1"
 						}
 					],
 					"transformations": [
@@ -3365,6 +3297,9 @@
 						},
 						{
 							"name": "select1"
+						},
+						{
+							"name": "cast1"
 						}
 					],
 					"scriptLines": [
@@ -3421,7 +3356,12 @@
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> select1",
-						"select1 sink(allowSchemaDrift: true,",
+						"select1 cast(output(",
+						"          value as double,",
+						"          referenceTime as timestamp 'yyyy-MM-dd\\'T\\'HH:mm:ss'",
+						"     ),",
+						"     errors: true) ~> cast1",
+						"cast1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'parquet',",
 						"     partitionFileNames:['frostData.parquet'],",
@@ -3437,8 +3377,7 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/JSON')]",
-				"[concat(variables('workspaceId'), '/datasets/Parquet')]",
-				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage2')]"
+				"[concat(variables('workspaceId'), '/datasets/Parquet')]"
 			]
 		},
 		{
@@ -4108,6 +4047,29 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/Create External Table Wilservice')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "CreateExternalTables"
+				},
+				"content": {
+					"query": "",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/CreateExternalTables')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
@@ -4200,26 +4162,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/SQL script 2')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"content": {
-					"query": "SELECT TOP (100) [elements]\n FROM [dbo].[elements]",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "Demo",
-						"poolName": "Built-in"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/Frost API R')]",
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
@@ -4241,15 +4183,18 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "cd0b15c9-20ec-496c-832a-411456e8f653"
+						"spark.autotune.trackingId": "cf285524-4011-4dde-bf1d-e17147944e0e"
 					}
 				},
 				"metadata": {
 					"saveOutput": true,
+					"synapse_widget": {
+						"version": "0.1"
+					},
 					"enableDebugMode": false,
 					"kernelspec": {
-						"name": "synapse_sparkr",
-						"display_name": "r"
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
 					},
 					"language_info": {
 						"name": "r"
@@ -4261,20 +4206,20 @@
 						"endpoint": "https://syn-ingraphic-01.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/frost",
 						"auth": {
 							"type": "AAD",
-							"authResource": "https://dev.azuresynapse.net"
+							"authResource": "https://dev.azuresynapse.net",
+							"authHeader": null
 						},
 						"sparkVersion": "3.3",
 						"nodeCount": 10,
 						"cores": 4,
 						"memory": 28,
-						"automaticScaleJobs": false
+						"extraHeader": null
 					},
 					"sessionKeepAliveTimeout": 30
 				},
 				"cells": [
 					{
 						"cell_type": "code",
-						"metadata": {},
 						"source": [
 							"library(tidyverse)\r\n",
 							"library(notebookutils)\r\n",
@@ -4285,8 +4230,7 @@
 							"# retrieve the job-id from the Spark environment \r\n",
 							"jobId <- mssparkutils.env.getJobId() "
 						],
-						"outputs": [],
-						"execution_count": null
+						"outputs": []
 					},
 					{
 						"cell_type": "code",
@@ -4950,6 +4894,10 @@
 			"properties": {
 				"nbformat": 4,
 				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "frost",
+					"type": "BigDataPoolReference"
+				},
 				"sessionProperties": {
 					"driverMemory": "28g",
 					"driverCores": 4,
@@ -4960,7 +4908,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "f2cca0e4-2cce-4653-a88a-56654783b300"
+						"spark.autotune.trackingId": "faa0b601-ae1d-4011-8645-4a078afb3571"
 					}
 				},
 				"metadata": {
@@ -4968,10 +4916,24 @@
 					"enableDebugMode": false,
 					"kernelspec": {
 						"name": "synapse_pyspark",
-						"display_name": "python"
+						"display_name": "Synapse PySpark"
 					},
 					"language_info": {
 						"name": "r"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/7b03814f-5f7f-40a4-96f4-625d301afef0/resourceGroups/rg-ingraphic-1/providers/Microsoft.Synapse/workspaces/syn-ingraphic-01/bigDataPools/frost",
+						"name": "frost",
+						"type": "Spark",
+						"endpoint": "https://syn-ingraphic-01.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/frost",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.3",
+						"nodeCount": 10,
+						"cores": 4,
+						"memory": 28
 					},
 					"sessionKeepAliveTimeout": 30
 				},
@@ -4981,11 +4943,16 @@
 						"source": [
 							"# Hvilken målestasjoner finnes det i Oslo\r\n",
 							"library(tidyverse)\r\n",
+							"\r\n",
+							"# Insert your own client ID here\r\n",
+							"client_id_secret <- mssparkutils.credentials.getSecret(\"FrostAPISecrets\", \"FrostAPI1\", \"AzureKeyVault1\")\r\n",
+							"endpoint <- paste0(\"https://\", client_id_secret, \"@frost.met.no/observations/v0.jsonld\")\r\n",
+							"\r\n",
 							"# Issue an HTTP GET request and extract JSON data\r\n",
 							"xs <- try(jsonlite::fromJSON(URLencode('https://frost.met.no/sources/v0.jsonld?types=SensorSystem&name=Oslo*'),flatten=T))"
 						],
 						"outputs": [],
-						"execution_count": null
+						"execution_count": 1
 					},
 					{
 						"cell_type": "code",

@@ -5,17 +5,8 @@
 		"workspaceName": {
 			"value": "syn-ingraphic-01"
 		},
-		"AzureDataLakeStorage2_accountKey": {
-			"value": ""
-		},
-		"AzureSynapseAnalytics1_connectionString": {
-			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=syn-ingraphic-01-ondemand.sql.azuresynapse.net;Initial Catalog=Demo"
-		},
 		"syn-ingraphic-01-WorkspaceDefaultSqlServer_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:syn-ingraphic-01.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
-		},
-		"AzureDataLakeStorage2_properties_typeProperties_url": {
-			"value": "https://dlsingraphic01.dfs.core.windows.net/"
 		},
 		"AzureKeyVault1_properties_typeProperties_baseUrl": {
 			"value": "https://FrostAPISecrets.vault.azure.net/"
