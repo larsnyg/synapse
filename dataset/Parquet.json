@@ -2,7 +2,7 @@
 	"name": "Parquet",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "syn-ingraphic-01-WorkspaceDefaultStorage",
+			"referenceName": "AzureDataLakeStorage2",
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
