@@ -3,6 +3,10 @@
 	"properties": {
 		"nbformat": 4,
 		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "frost",
+			"type": "BigDataPoolReference"
+		},
 		"sessionProperties": {
 			"driverMemory": "28g",
 			"driverCores": 4,
@@ -13,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "f2cca0e4-2cce-4653-a88a-56654783b300"
+				"spark.autotune.trackingId": "faa0b601-ae1d-4011-8645-4a078afb3571"
 			}
 		},
 		"metadata": {
@@ -21,10 +25,25 @@
 			"enableDebugMode": false,
 			"kernelspec": {
 				"name": "synapse_pyspark",
-				"display_name": "python"
+				"display_name": "Synapse PySpark"
 			},
 			"language_info": {
 				"name": "r"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/7b03814f-5f7f-40a4-96f4-625d301afef0/resourceGroups/rg-ingraphic-1/providers/Microsoft.Synapse/workspaces/syn-ingraphic-01/bigDataPools/frost",
+				"name": "frost",
+				"type": "Spark",
+				"endpoint": "https://syn-ingraphic-01.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/frost",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
 			},
 			"sessionKeepAliveTimeout": 30
 		},
@@ -34,10 +53,15 @@
 				"source": [
 					"# Hvilken målestasjoner finnes det i Oslo\r\n",
 					"library(tidyverse)\r\n",
+					"\r\n",
+					"# Insert your own client ID here\r\n",
+					"client_id_secret <- mssparkutils.credentials.getSecret(\"FrostAPISecrets\", \"FrostAPI1\", \"AzureKeyVault1\")\r\n",
+					"endpoint <- paste0(\"https://\", client_id_secret, \"@frost.met.no/observations/v0.jsonld\")\r\n",
+					"\r\n",
 					"# Issue an HTTP GET request and extract JSON data\r\n",
 					"xs <- try(jsonlite::fromJSON(URLencode('https://frost.met.no/sources/v0.jsonld?types=SensorSystem&name=Oslo*'),flatten=T))"
 				],
-				"execution_count": null
+				"execution_count": 1
 			},
 			{
 				"cell_type": "code",
