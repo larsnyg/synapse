@@ -2,7 +2,7 @@
 	"name": "AzureSynapseAnalyticsTable2",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "AzureSynapseAnalytics1",
+			"referenceName": "syn-ingraphic-01-WorkspaceDefaultSqlServer",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],

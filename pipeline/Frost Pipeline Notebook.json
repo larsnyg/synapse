@@ -52,7 +52,7 @@
 				},
 				"userProperties": [],
 				"linkedServiceName": {
-					"referenceName": "AzureSynapseAnalytics1",
+					"referenceName": "syn-ingraphic-01-WorkspaceDefaultSqlServer",
 					"type": "LinkedServiceReference"
 				},
 				"typeProperties": {
