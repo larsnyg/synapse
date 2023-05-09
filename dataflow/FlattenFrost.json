@@ -34,6 +34,9 @@
 				},
 				{
 					"name": "select1"
+				},
+				{
+					"name": "cast1"
 				}
 			],
 			"scriptLines": [
@@ -90,7 +93,12 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
-				"select1 sink(allowSchemaDrift: true,",
+				"select1 cast(output(",
+				"          value as double,",
+				"          referenceTime as timestamp 'yyyy-MM-dd\\'T\\'HH:mm:ss'",
+				"     ),",
+				"     errors: true) ~> cast1",
+				"cast1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'parquet',",
 				"     partitionFileNames:['frostData.parquet'],",
