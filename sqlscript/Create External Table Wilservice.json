@@ -1,0 +1,20 @@
+{
+	"name": "Create External Table Wilservice",
+	"properties": {
+		"folder": {
+			"name": "CreateExternalTables"
+		},
+		"content": {
+			"query": "",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

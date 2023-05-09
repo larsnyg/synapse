@@ -277,15 +277,6 @@
 								"Directory": "business",
 								"FileName": "@coalesce(null)"
 							}
-						},
-						"linkedServiceParameters": {
-							"sink1": {
-								"schemaLinkedService": {
-									"Container": "frost",
-									"Directory": "business",
-									"FileName": "@coalesce(null)"
-								}
-							}
 						}
 					},
 					"compute": {
