@@ -1,6 +1,9 @@
 {
 	"name": "Filter Excel",
 	"properties": {
+		"folder": {
+			"name": "Other"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [

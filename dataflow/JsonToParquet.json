@@ -1,6 +1,9 @@
 {
 	"name": "JsonToParquet",
 	"properties": {
+		"folder": {
+			"name": "Other"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
