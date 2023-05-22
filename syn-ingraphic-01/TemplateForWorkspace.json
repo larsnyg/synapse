@@ -12,6 +12,10 @@
 			"metadata": "Secure string for 'connectionString' of 'syn-ingraphic-01-WorkspaceDefaultSqlServer'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:syn-ingraphic-01.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
 		},
+		"AzureDataLakeStorage1_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
+		},
 		"AzureKeyVault1_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://FrostAPISecrets.vault.azure.net/"
@@ -27,6 +31,10 @@
 		"syn-ingraphic-01-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://dlsingraphic01.dfs.core.windows.net"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://dlsingraphic01.dfs.core.windows.net/"
 		}
 	},
 	"variables": {
@@ -585,6 +593,9 @@
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "temp"
 				},
 				"annotations": [],
 				"lastPublishTime": "2023-04-15T21:04:20Z"
@@ -2489,6 +2500,64 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/RestResource')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Connection to your REST/HTTP",
+				"linkedServiceName": {
+					"referenceName": "FrostREST",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/FrostREST')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SinkDataset')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "Connection to your Azure Data Lake Store",
+				"linkedServiceName": {
+					"referenceName": "syn-ingraphic-01-WorkspaceDefaultStorage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Container": {
+						"type": "string"
+					},
+					"Directory": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "@dataset().Directory",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().Container",
+							"type": "Expression"
+						}
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/syn-ingraphic-01-WorkspaceDefaultStorage')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/AzureKeyVault1')]",
 			"type": "Microsoft.Synapse/workspaces/linkedServices",
 			"apiVersion": "2019-06-01-preview",
@@ -3116,6 +3185,9 @@
 			"type": "Microsoft.Synapse/workspaces/dataflows",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
+				"folder": {
+					"name": "Other"
+				},
 				"type": "MappingDataFlow",
 				"typeProperties": {
 					"sources": [
@@ -3310,7 +3382,7 @@
 						"          createdAt as timestamp,",
 						"          currentItemCount as short,",
 						"          currentLink as string,",
-						"          data as (observations as (elementId as string, exposureCategory as short, level as (levelType as string, unit as string, value as short), performanceCategory as string, qualityCode as short, timeOffset as string, timeResolution as string, timeSeriesId as boolean, unit as string, value as double)[], referenceTime as string, sourceId as string)[],",
+						"          data as (observations as (elementId as string, exposureCategory as boolean, level as (levelType as string, unit as string, value as short), performanceCategory as string, qualityCode as short, timeOffset as string, timeResolution as string, timeSeriesId as boolean, unit as string, value as double)[], referenceTime as string, sourceId as string)[],",
 						"          itemsPerPage as short,",
 						"          license as string,",
 						"          offset as boolean,",
@@ -3321,7 +3393,7 @@
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false,",
 						"     documentForm: 'documentPerLine',",
-						"     wildcardPaths:['raw_json/*.json']) ~> source1",
+						"     wildcardPaths:['raw_json/*json']) ~> source1",
 						"source1 foldDown(unroll(data, data),",
 						"     mapColumn(",
 						"          observations = data.observations,",
@@ -3424,6 +3496,9 @@
 			"type": "Microsoft.Synapse/workspaces/dataflows",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
+				"folder": {
+					"name": "Other"
+				},
 				"type": "MappingDataFlow",
 				"typeProperties": {
 					"sources": [
@@ -4055,12 +4130,12 @@
 					"name": "CreateExternalTables"
 				},
 				"content": {
-					"query": "",
+					"query": "select 1",
 					"metadata": {
 						"language": "sql"
 					},
 					"currentConnection": {
-						"databaseName": "master",
+						"databaseName": "default",
 						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
@@ -5001,6 +5076,49 @@
 			},
 			"dependsOn": [],
 			"location": "norwayeast"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 2')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE DATABASE mydbname\n\n-- 1  \nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'qwe@##@5324aSD127123g'  \nGO  \n  \n-- 2  \nCREATE DATABASE SCOPED CREDENTIAL WorkspaceIdentity WITH IDENTITY = 'Managed Identity'  \nGO  \n  \n-- 3  \nCREATE LOGIN TestUser WITH PASSWORD = 'abcdef123!@#'  \nGO  \n  \n-- 4  \nCREATE USER Test FOR LOGIN TestUser  \nGO  \n  \n-- 5  \nGRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::WorkspaceIdentity TO Test  \n      \n-- 6  \nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'data_{storage-account-name}_dfs_core_windows_net')   \n    CREATE EXTERNAL DATA SOURCE [data_{storage-account-name}_dfs_core_windows_net]   \n    WITH (  \n        LOCATION   = 'https://{storage-account-name}.dfs.core.windows.net/data',  \n        CREDENTIAL = WorkspaceIdentity   \n    )  \nGO  \n\n -- 7   \nIF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat')   \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat]   \n\tWITH ( FORMAT_TYPE = PARQUET)  \nGO  \n\n-- 8  \nCREATE EXTERNAL TABLE TestTable (  \n\t[Id] INT,  \n\t[FirstName] VARCHAR(7),  \n\t[Lastname] VARCHAR(38,18),  \n\t)  \n\tWITH (  \n\tLOCATION = 'test.parquet',  \n\tDATA_SOURCE = [data_{storage-account-name}_dfs_core_windows_net],  \n\tFILE_FORMAT = [SynapseParquetFormat]  \n\t)  \nGO  \n\n-- 9  \nSELECT TOP 100 * FROM TestTable  \nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "mydbname",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AzureDataLakeStorage1')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
 		}
 	]
 }
