@@ -5,12 +5,12 @@
 			"name": "CreateExternalTables"
 		},
 		"content": {
-			"query": "",
+			"query": "select 1",
 			"metadata": {
 				"language": "sql"
 			},
 			"currentConnection": {
-				"databaseName": "master",
+				"databaseName": "default",
 				"poolName": "Built-in"
 			},
 			"resultLimit": 5000
