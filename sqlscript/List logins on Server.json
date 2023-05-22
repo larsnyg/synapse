@@ -1,0 +1,20 @@
+{
+	"name": "List logins on Server",
+	"properties": {
+		"folder": {
+			"name": "Other"
+		},
+		"content": {
+			"query": "select sp.name as login,\n       sp.type_desc as login_type,\n       sl.password_hash,\n       sp.create_date,\n       sp.modify_date,\n       case when sp.is_disabled = 1 then 'Disabled'\n            else 'Enabled' end as status\nfrom sys.server_principals sp\nleft join sys.sql_logins sl\n          on sp.principal_id = sl.principal_id\nwhere sp.type not in ('G', 'R')\norder by sp.name;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
