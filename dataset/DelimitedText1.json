@@ -8,6 +8,12 @@
 		"parameters": {
 			"FileName": {
 				"type": "string"
+			},
+			"Directory": {
+				"type": "string"
+			},
+			"Container": {
+				"type": "string"
 			}
 		},
 		"annotations": [],
@@ -19,7 +25,14 @@
 					"value": "@dataset().FileName",
 					"type": "Expression"
 				},
-				"fileSystem": "meta"
+				"folderPath": {
+					"value": "@dataset().Directory",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "@dataset().Container",
+					"type": "Expression"
+				}
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",

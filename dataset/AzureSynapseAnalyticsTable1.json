@@ -3,7 +3,10 @@
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "syn-ingraphic-01-WorkspaceDefaultSqlServer",
-			"type": "LinkedServiceReference"
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"DBName": "TestDed"
+			}
 		},
 		"annotations": [],
 		"type": "AzureSqlDWTable",
@@ -16,7 +19,7 @@
 		],
 		"typeProperties": {
 			"schema": "dbo",
-			"table": "referenceTime"
+			"table": "kompa"
 		}
 	},
 	"type": "Microsoft.Synapse/workspaces/datasets"
