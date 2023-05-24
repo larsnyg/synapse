@@ -1,0 +1,17 @@
+{
+	"name": "Create Kompa table",
+	"properties": {
+		"content": {
+			"query": "DROP TABLE [dbo].[kompa]\n\nCREATE TABLE dbo.kompa(\n    BatchCode varchar(4000),\n    SampleCode varchar(4000),\n    AR_base_64_coded varchar(max))\nGO\n\nCOPY INTO [dbo].[kompa]\nFROM 'https://dlsingraphic01.blob.core.windows.net/kompa/439-2023-01260156.txt'\nWITH\n(\n    CREDENTIAL =(IDENTITY = 'Managed Identity'),\n    FILE_TYPE = 'CSV',\n    FIELDTERMINATOR = ',',\n    ROWTERMINATOR= '\\n',\n    FIRSTROW = 2\n)\n\nDROP TABLE [dbo].[survey]\nCREATE TABLE dbo.survey(\n    Year int,\n    Industry_aggregation_NZSIOC char(10),\n    Industry_code_NZSIOC  char(10),\n    Industry_name_NZSIOC  char(100),\n    Units  char(100),\n    Variable_code  char(10),\n    Variable_name  char(100),\n    Variable_category  char(100),\n    Value  char(100),\n    Industry_code_ANZSIC06  varchar(500))\nGO\n\nCOPY INTO [dbo].[survey]\nFROM 'https://dlsingraphic01.blob.core.windows.net/kompa/annual-enterprise-survey-2021-financial-year-provisional-csv.csv'\nWITH\n(\n    CREDENTIAL =(IDENTITY = 'Managed Identity'),\n    FILE_TYPE = 'CSV',\n    FIELDTERMINATOR = ',',\n    ROWTERMINATOR= '\\n',\n    FIRSTROW = 2\n)",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "TestDed",
+				"poolName": "TestDed"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
