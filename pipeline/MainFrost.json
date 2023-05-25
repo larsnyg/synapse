@@ -65,7 +65,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"FileName": {
-								"value": "coalesce(null)",
+								"value": "@coalesce(null)",
 								"type": "Expression"
 							},
 							"Directory": "raw_json",
