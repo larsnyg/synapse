@@ -1,0 +1,10 @@
+{
+	"name": "synapse-ws-sql--syn-ingraphic-02",
+	"properties": {
+		"privateLinkResourceId": "/subscriptions/7b03814f-5f7f-40a4-96f4-625d301afef0/resourceGroups/rg-syn-ingraphic-2/providers/Microsoft.Synapse/workspaces/syn-ingraphic-02",
+		"groupId": "sql",
+		"fqdns": [
+			"syn-ingraphic-02.8b35ac6e-b796-4e20-a217-4e1977751c79.sql.azuresynapse.net"
+		]
+	}
+}

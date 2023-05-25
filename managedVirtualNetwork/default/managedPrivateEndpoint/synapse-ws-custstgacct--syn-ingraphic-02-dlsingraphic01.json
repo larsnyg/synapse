@@ -1,0 +1,7 @@
+{
+	"name": "synapse-ws-custstgacct--syn-ingraphic-02-dlsingraphic01",
+	"properties": {
+		"privateLinkResourceId": "/subscriptions/7b03814f-5f7f-40a4-96f4-625d301afef0/resourceGroups/rg-ingraphic-1/providers/Microsoft.Storage/storageAccounts/dlsingraphic01",
+		"groupId": "dfs"
+	}
+}
