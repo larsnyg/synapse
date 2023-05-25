@@ -1,5 +1,5 @@
 {
-	"name": "Pipeline 1",
+	"name": "Copy CSV Eurofins to SQL DB",
 	"properties": {
 		"activities": [
 			{
@@ -13,7 +13,16 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": [],
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "kompa//439-2023-01240375.csv"
+					},
+					{
+						"name": "Destination",
+						"value": "dbo.kompa"
+					}
+				],
 				"typeProperties": {
 					"source": {
 						"type": "DelimitedTextSource",
@@ -32,7 +41,49 @@
 						"tableOption": "autoCreate",
 						"disableMetricsCollection": false
 					},
-					"enableStaging": false
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "syn-ingraphic-01-WorkspaceDefaultStorage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "kompa"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "BatchCode",
+									"type": "String"
+								},
+								"sink": {
+									"name": "BatchCode",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "SampleCode",
+									"type": "String"
+								},
+								"sink": {
+									"name": "SampleCode",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "AR_base_64_coded\r",
+									"type": "String"
+								},
+								"sink": {
+									"name": "AR_base_64_coded\r",
+									"type": "String"
+								}
+							}
+						]
+					}
 				},
 				"inputs": [
 					{

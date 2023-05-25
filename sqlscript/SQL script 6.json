@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 6",
+	"properties": {
+		"content": {
+			"query": "SELECT TOP (100) [BatchCode]\n,[SampleCode]\n,[AR_base_64_coded]\n FROM [dbo].[kompa]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "TestDed",
+				"poolName": "TestDed"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
