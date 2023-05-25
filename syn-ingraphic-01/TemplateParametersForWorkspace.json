@@ -5,11 +5,11 @@
 		"workspaceName": {
 			"value": "syn-ingraphic-01"
 		},
+		"Kompa Dedicated Pool_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=syn-ingraphic-01.sql.azuresynapse.net;Initial Catalog=TestDed"
+		},
 		"syn-ingraphic-01-WorkspaceDefaultSqlServer_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:syn-ingraphic-01.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
-		},
-		"AzureDataLakeStorage1_accountKey": {
-			"value": ""
 		},
 		"AzureKeyVault1_properties_typeProperties_baseUrl": {
 			"value": "https://FrostAPISecrets.vault.azure.net/"
@@ -22,9 +22,6 @@
 		},
 		"syn-ingraphic-01-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"value": "https://dlsingraphic01.dfs.core.windows.net"
-		},
-		"AzureDataLakeStorage1_properties_typeProperties_url": {
-			"value": "https://dlsingraphic01.dfs.core.windows.net/"
 		}
 	}
 }

@@ -7,14 +7,15 @@
 			"metadata": "Workspace name",
 			"defaultValue": "syn-ingraphic-01"
 		},
+		"Kompa Dedicated Pool_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'Kompa Dedicated Pool'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=syn-ingraphic-01.sql.azuresynapse.net;Initial Catalog=TestDed"
+		},
 		"syn-ingraphic-01-WorkspaceDefaultSqlServer_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'syn-ingraphic-01-WorkspaceDefaultSqlServer'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:syn-ingraphic-01.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
-		},
-		"AzureDataLakeStorage1_accountKey": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
 		},
 		"AzureKeyVault1_properties_typeProperties_baseUrl": {
 			"type": "string",
@@ -31,16 +32,142 @@
 		"syn-ingraphic-01-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://dlsingraphic01.dfs.core.windows.net"
-		},
-		"AzureDataLakeStorage1_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://dlsingraphic01.dfs.core.windows.net/"
 		}
 	},
 	"variables": {
 		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('workspaceName'), '/TestDed')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Copy CSV Eurofins to SQL DB')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "kompa//439-2023-01240375.csv"
+							},
+							{
+								"name": "Destination",
+								"value": "dbo.kompa"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "SqlDWSink",
+								"allowCopyCommand": true,
+								"copyCommandSettings": {},
+								"tableOption": "autoCreate",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "syn-ingraphic-01-WorkspaceDefaultStorage",
+									"type": "LinkedServiceReference"
+								},
+								"path": "kompa"
+							},
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "BatchCode",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BatchCode",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "SampleCode",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SampleCode",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "AR_base_64_coded\r",
+											"type": "String"
+										},
+										"sink": {
+											"name": "AR_base_64_coded\r",
+											"type": "String"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DelimitedText2",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzureSynapseAnalyticsTable1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "Kompa"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/DelimitedText2')]",
+				"[concat(variables('workspaceId'), '/datasets/AzureSynapseAnalyticsTable1')]",
+				"[concat(variables('workspaceId'), '/linkedServices/syn-ingraphic-01-WorkspaceDefaultStorage')]"
+			]
+		},
 		{
 			"name": "[concat(parameters('workspaceName'), '/Download Complete History')]",
 			"type": "Microsoft.Synapse/workspaces/pipelines",
@@ -2008,7 +2135,10 @@
 			"properties": {
 				"linkedServiceName": {
 					"referenceName": "syn-ingraphic-01-WorkspaceDefaultSqlServer",
-					"type": "LinkedServiceReference"
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "TestDed"
+					}
 				},
 				"annotations": [],
 				"type": "AzureSqlDWTable",
@@ -2021,7 +2151,7 @@
 				],
 				"typeProperties": {
 					"schema": "dbo",
-					"table": "referenceTime"
+					"table": "kompa"
 				}
 			},
 			"dependsOn": [
@@ -2106,6 +2236,12 @@
 				"parameters": {
 					"FileName": {
 						"type": "string"
+					},
+					"Directory": {
+						"type": "string"
+					},
+					"Container": {
+						"type": "string"
 					}
 				},
 				"annotations": [],
@@ -2117,7 +2253,14 @@
 							"value": "@dataset().FileName",
 							"type": "Expression"
 						},
-						"fileSystem": "meta"
+						"folderPath": {
+							"value": "@dataset().Directory",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().Container",
+							"type": "Expression"
+						}
 					},
 					"columnDelimiter": ",",
 					"escapeChar": "\\",
@@ -2139,6 +2282,44 @@
 					},
 					{
 						"name": "ID",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/syn-ingraphic-01-WorkspaceDefaultStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DelimitedText2')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "syn-ingraphic-01-WorkspaceDefaultStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "439-2023-01240375.csv",
+						"fileSystem": "kompa"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
 						"type": "String"
 					}
 				]
@@ -2610,6 +2791,25 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
 				"[concat(variables('workspaceId'), '/linkedServices/AzureKeyVault1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Kompa Dedicated Pool')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('Kompa Dedicated Pool_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
 			]
 		},
 		{
@@ -4107,13 +4307,13 @@
 					"name": "Logic App"
 				},
 				"content": {
-					"query": "-- Create your Credential for the External Data Source\nCREATE DATABASE SCOPED CREDENTIAL WorkspaceIdentity\nWITH IDENTITY = 'Managed Identity'\n\n-- Create External Data Source\nCREATE EXTERNAL DATA SOURCE [HelloWorld]\nWITH ( \n    LOCATION = 'https://blogmsdemodl.dfs.core.windows.net/blogmsdemofs/Raw/helloworld',\n    CREDENTIAL = [WorkspaceIdentity]\n)\n\n-- Create View in Synapse\nCREATE VIEW kompa AS\nSELECT * \nFROM OPENROWSET(\n        BULK 'SloveniaTestData.csv',\n        DATA_SOURCE = 'HelloWorld',\n        FORMAT = 'CSV', \n        FIELDTERMINATOR =',', \n        ROWTERMINATOR = '\\n'\n    )\nWITH (\n    [country_code] VARCHAR (5) COLLATE Latin1_General_BIN2,\n    [country_name] VARCHAR (100) COLLATE Latin1_General_BIN2,\n    [year] smallint,\n    [population] bigint\n) AS [r];\n\n-- Check you can Query the View in Synapse\nSelect * From [dbo].[kompa]\n\n-- Setup Synapse Access for Logic App\nCREATE LOGIN [convertText2PDF] FROM EXTERNAL PROVIDER\nCREATE USER [convertText2PDF] FROM LOGIN [convertText2PDF]\n\n-- Grant the Logic App Service Principal access to use the scoped credential\nGRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::WorkspaceIdentity to [convertText2PDF];\n\n-- Grant the logic app Service Principal access to query the view\nGRANT SELECT ON OBJECT::[dbo].[kompa] TO [convertText2PDF] \n\nSELECT  top 1 [AR_base_64_coded]\n FROM [dbo].[kompa]\n",
+					"query": "-- Create your Credential for the External Data Source\nCREATE DATABASE SCOPED CREDENTIAL WorkspaceIdentity\nWITH IDENTITY = 'Managed Identity'\n\n-- Create External Data Source\nCREATE EXTERNAL DATA SOURCE [HelloWorld]\nWITH ( \n    LOCATION = 'https://blogmsdemodl.dfs.core.windows.net/blogmsdemofs/Raw/helloworld',\n    CREDENTIAL = [WorkspaceIdentity]\n)\n\n-- Create View in Synapse\nCREATE VIEW kompa AS\nSELECT * \nFROM OPENROWSET(\n        BULK 'SloveniaTestData.csv',\n        DATA_SOURCE = 'HelloWorld',\n        FORMAT = 'CSV', \n        FIELDTERMINATOR =',', \n        ROWTERMINATOR = '\\n'\n    )\nWITH (\n    [country_code] VARCHAR (5) COLLATE Latin1_General_BIN2,\n    [country_name] VARCHAR (100) COLLATE Latin1_General_BIN2,\n    [year] smallint,\n    [population] bigint\n) AS [r];\n\n-- Check you can Query the View in Synapse\nSelect * From [dbo].[kompa]\n\n-- Setup Synapse Access for Logic App\nCREATE LOGIN [logicappkompa] FROM EXTERNAL PROVIDER\nCREATE USER [logicappkompa] FROM LOGIN [logicappkompa]\nCREATE USER [logicappkompa] FROM EXTERNAL PROVIDER\n\nGRANT permission  [ ,...n ]    \n    ON DATABASE SCOPED CREDENTIAL :: credential_name   \n    TO principal [ ,...n ] [ WITH GRANT OPTION ]   \n    [ AS granting_principal ]\n    \n-- Grant the Logic App Service Principal access to use the scoped credential\nGRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::WorkspaceIdentity to [logicappkompa];\n\n-- Grant the logic app Service Principal access to query the view\nGRANT SELECT ON OBJECT::[dbo].[kompa] TO [logicappkompa] \n\nSELECT  top 1 [AR_base_64_coded]\n FROM [dbo].[kompa]\n\n",
 					"metadata": {
 						"language": "sql"
 					},
 					"currentConnection": {
-						"databaseName": "Demo",
-						"poolName": "Built-in"
+						"databaseName": "TestDed",
+						"poolName": "TestDed"
 					},
 					"resultLimit": 5000
 				},
@@ -4145,6 +4345,26 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/Create Kompa table')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "DROP TABLE [dbo].[kompa]\nDROP EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat]\n\nIF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat] \n\tWITH ( FORMAT_TYPE = DELIMITEDTEXT,\n\t       FORMAT_OPTIONS (\n\t\t\t FIELD_TERMINATOR = ',',\n,\n\t\t\t STRING_DELIMITER = '\"',\n\t\t\t USE_TYPE_DEFAULT = FALSE,\n\t\t\t FIRST_ROW = 2\n\t\t\t))\nGO\n\n\nCREATE TABLE dbo.kompa(\n    BatchCode varchar(4000),\n    SampleCode varchar(4000),\n    AR_base_64_coded varchar(7000))\nGO\n\nCOPY INTO [dbo].[kompa]\nFROM 'https://dlsingraphic01.blob.core.windows.net/kompa/439-2023-01260156.txt'\nWITH\n(\n    FILE_TYPE = 'CSV',\n    CREDENTIAL =(IDENTITY = 'Managed Identity'),\n    FILE_FORMAT = SynapseDelimitedTextFormat\n)\n\n--Note when specifying the column list, input field numbers start from 1\nCOPY INTO test_1 (Col_one default 'myStringDefault' 1, Col_two default 1 3)\nFROM 'https://myaccount.blob.core.windows.net/myblobcontainer/folder1/'\nWITH (\n    FILE_TYPE = 'CSV',\n    CREDENTIAL=(IDENTITY= 'Storage Account Key', SECRET='<Your_Account_Key>'),\n    --CREDENTIAL should look something like this:\n    --CREDENTIAL=(IDENTITY= 'Storage Account Key', SECRET='x6RWv4It5F2msnjelv3H4DA80n0PQW0daPdw43jM0nyetx4c6CpDkdj3986DX5AHFMIf/YN4y6kkCnU8lb+Wx0Pj+6MDw=='),\n    FIELDQUOTE = '\"',\n    FIELDTERMINATOR=',',\n    ROWTERMINATOR='0x0A',\n    ENCODING = 'UTF8',\n    FIRSTROW = 2\n)\n\n\nDROP TABLE [dbo].[survey]\nCREATE TABLE dbo.survey(\n    Year int,\n    Industry_aggregation_NZSIOC char(10),\n    Industry_code_NZSIOC  char(10),\n    Industry_name_NZSIOC  char(100),\n    Units  char(100),\n    Variable_code  char(10),\n    Variable_name  char(100),\n    Variable_category  char(100),\n    Value  char(100),\n    Industry_code_ANZSIC06  varchar(500))\nGO\n\nCOPY INTO [dbo].[survey]\nFROM 'https://dlsingraphic01.blob.core.windows.net/kompa/annual-enterprise-survey-2021-financial-year-provisional-csv.csv'\nWITH\n(\n    CREDENTIAL =(IDENTITY = 'Managed Identity'),\n    FILE_TYPE = 'CSV',\n    FIELDTERMINATOR = ',',\n    ROWTERMINATOR= '\\n',\n    FIRSTROW = 2\n)",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "TestDed",
+						"poolName": "TestDed"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/CreateExternalTables')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
@@ -4153,7 +4373,7 @@
 					"name": "CreateExternalTables"
 				},
 				"content": {
-					"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat] \n\tWITH ( FORMAT_TYPE = DELIMITEDTEXT ,\n\t       FORMAT_OPTIONS (\n\t\t\t FIELD_TERMINATOR = ',',\n\t\t\t USE_TYPE_DEFAULT = FALSE\n\t\t\t))\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'meta_dlsingraphic01_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [meta_dlsingraphic01_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://meta@dlsingraphic01.dfs.core.windows.net' \n\t)\nGO\n\nDROP EXTERNAL TABLE [dbo].[elements]\nGO\n\nCREATE EXTERNAL TABLE [dbo].[elements] (\n\t[elements] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'elements.csv',\n\tDATA_SOURCE = [meta_dlsingraphic01_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseDelimitedTextFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM [dbo].[elements]\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat] \n\tWITH ( FORMAT_TYPE = DELIMITEDTEXT ,\n\t       FORMAT_OPTIONS (\n\t\t\t FIELD_TERMINATOR = ',',\n\t\t\t USE_TYPE_DEFAULT = FALSE\n\t\t\t))\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'meta_dlsingraphic01_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [meta_dlsingraphic01_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://meta@dlsingraphic01.dfs.core.windows.net' \n\t)\nGO\n\nCREATE EXTERNAL TABLE [dbo].[referenceTime] (\n\t[numberOfMonths] bigint\n\t)\n\tWITH (\n\tLOCATION = 'referencetime.csv',\n\tDATA_SOURCE = [meta_dlsingraphic01_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseDelimitedTextFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM [dbo].[referenceTime]\nGO\n\nDROP EXTERNAL TABLE [dbo].[Temperatur];\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'business_dlsingraphic01_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [business_dlsingraphic01_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://business@dlsingraphic01.dfs.core.windows.net' \n\t)\nGO\n\nCREATE EXTERNAL TABLE [dbo].[Temperatur] (\n\t[referenceTime] nvarchar(4000),\n\t[sourceId] nvarchar(4000),\n\t[elementId] nvarchar(4000),\n\t[Temperature] float\n\t)\n\tWITH (\n\tLOCATION = '/',\n\tDATA_SOURCE = [business_dlsingraphic01_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM [dbo].[Temperatur]\nORDER BY referenceTime DESC\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat] \n\tWITH ( FORMAT_TYPE = DELIMITEDTEXT ,\n\t       FORMAT_OPTIONS (\n\t\t\t FIELD_TERMINATOR = ',',\n\t\t\t USE_TYPE_DEFAULT = FALSE\n\t\t\t))\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'meta_dlsingraphic01_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [meta_dlsingraphic01_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://meta@dlsingraphic01.dfs.core.windows.net' \n\t)\nGO\n\nDROP EXTERNAL TABLE [dbo].[sources]\n\nCREATE EXTERNAL TABLE [dbo].[sources] (\n\t[Source] nvarchar(4000),\n\t[Lat] float,\n\t[Lon] float,\n\t[ID] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'sources.csv',\n\tDATA_SOURCE = [meta_dlsingraphic01_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseDelimitedTextFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM [dbo].[sources]\nGO",
+					"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat] \n\tWITH ( FORMAT_TYPE = DELIMITEDTEXT ,\n\t       FORMAT_OPTIONS (\n\t\t\t FIELD_TERMINATOR = ',',\n\t\t\t USE_TYPE_DEFAULT = FALSE\n\t\t\t))\nGO\n\nDROP EXTERNAL DATA SOURCE [meta_dlsingraphic01_dfs_core_windows_net]\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'meta_dlsingraphic01_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [meta_dlsingraphic01_dfs_core_windows_net1] \n\tWITH (\n\t\tLOCATION = 'abfss://meta@dlsingraphic01.dfs.core.windows.net',\n\t\tCREDENTIAL = WorkspaceIdentity   \n\n\t)\nGO\n\nCREATE DATABASE Test\nGO\n\nDROP EXTERNAL TABLE [dbo].[elements]\nGO\n\nCREATE EXTERNAL TABLE [dbo].[elements1] (\n\t[elements] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'elements.csv',\n\tDATA_SOURCE = [meta_dlsingraphic01_dfs_core_windows_net1],\n\tFILE_FORMAT = [SynapseDelimitedTextFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM [dbo].[elements]\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat] \n\tWITH ( FORMAT_TYPE = DELIMITEDTEXT ,\n\t       FORMAT_OPTIONS (\n\t\t\t FIELD_TERMINATOR = ',',\n\t\t\t USE_TYPE_DEFAULT = FALSE\n\t\t\t))\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'meta_dlsingraphic01_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [meta_dlsingraphic01_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://meta@dlsingraphic01.dfs.core.windows.net' \n\t)\nGO\n\nCREATE EXTERNAL TABLE [dbo].[referenceTime] (\n\t[numberOfMonths] bigint\n\t)\n\tWITH (\n\tLOCATION = '439-2023-01240375.txt',\n\tDATA_SOURCE = [kompa_dlsingraphic01_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseDelimitedTextFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM [dbo].[referenceTime]\nGO\n\nDROP EXTERNAL TABLE [dbo].[Temperatur];\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'business_dlsingraphic01_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [business_dlsingraphic01_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://business@dlsingraphic01.dfs.core.windows.net' \n\t)\nGO\n\nCREATE EXTERNAL TABLE [dbo].[Temperatur] (\n\t[referenceTime] nvarchar(4000),\n\t[sourceId] nvarchar(4000),\n\t[elementId] nvarchar(4000),\n\t[Temperature] float\n\t)\n\tWITH (\n\tLOCATION = '/',\n\tDATA_SOURCE = [business_dlsingraphic01_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM [dbo].[Temperatur]\nORDER BY referenceTime DESC\nGO\n\nDROP EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat1] \nIF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseDelimitedTextFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseDelimitedTextFormat1] \n\tWITH ( FORMAT_TYPE = DELIMITEDTEXT ,\n\t       FORMAT_OPTIONS (\n\t\t\t FIELD_TERMINATOR = ',',\n\t\t\t \tSTRING_DELIMITER = '\"',\n\t\t\t USE_TYPE_DEFAULT = FALSE,\n\t\t\t FIRST_ROW = 2\n\t\t\t))\nGO\n\n\n\nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'kompa_dlsingraphic01_dfs_core_windows_net') \n\tCREATE EXTERNAL DATA SOURCE [kompa_dlsingraphic01_dfs_core_windows_net] \n\tWITH (\n\t\tLOCATION = 'abfss://kompa@dlsingraphic01.dfs.core.windows.net' \n\t)\nGO\n\nDROP EXTERNAL TABLE [dbo].[kompa1]\n\nCREATE EXTERNAL TABLE [dbo].[kompa1] (\n\t[BatchCode] varchar(20),\n\t[SampleCode] varchar(20),\n\t[AR_base_64_coded] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = '439-2023-01240375.csv',\n\tDATA_SOURCE = [kompa_dlsingraphic01_dfs_core_windows_net],\n\tFILE_FORMAT = [SynapseDelimitedTextFormat1]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM [dbo].[kompa1]\nGO",
 					"metadata": {
 						"language": "sql"
 					},
@@ -4191,6 +4411,29 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/List logins on Server')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Other"
+				},
+				"content": {
+					"query": "select sp.name as login,\n       sp.type_desc as login_type,\n       sl.password_hash,\n       sp.create_date,\n       sp.modify_date,\n       case when sp.is_disabled = 1 then 'Disabled'\n            else 'Enabled' end as status\nfrom sys.server_principals sp\nleft join sys.sql_logins sl\n          on sp.principal_id = sl.principal_id\nwhere sp.type not in ('G', 'R')\norder by sp.name;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/Read JSON with SQL')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
@@ -4214,7 +4457,47 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/SQL script 1')]",
+			"name": "[concat(parameters('workspaceName'), '/SQL script 2')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE DATABASE mydbname\n\n-- 1  \nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'qwe@##@5324aSD127123g'  \nGO  \n  \n-- 2  \nCREATE DATABASE SCOPED CREDENTIAL WorkspaceIdentity WITH IDENTITY = 'Managed Identity'  \nGO  \n  \n-- 3  \nCREATE LOGIN TestUser WITH PASSWORD = 'abcdef123!@#'  \nGO  \n  \n-- 4  \nCREATE USER Test FOR LOGIN TestUser  \nGO  \n  \n-- 5  \nGRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::WorkspaceIdentity TO Test  \n      \n-- 6  \nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'data_{storage-account-name}_dfs_core_windows_net')   \n    CREATE EXTERNAL DATA SOURCE [data_{storage-account-name}_dfs_core_windows_net]   \n    WITH (  \n        LOCATION   = 'https://{storage-account-name}.dfs.core.windows.net/data',  \n        CREDENTIAL = WorkspaceIdentity   \n    )  \nGO  \n\n -- 7   \nIF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat')   \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat]   \n\tWITH ( FORMAT_TYPE = PARQUET)  \nGO  \n\n-- 8  \nCREATE EXTERNAL TABLE TestTable (  \n\t[Id] INT,  \n\t[FirstName] VARCHAR(7),  \n\t[Lastname] VARCHAR(38,18),  \n\t)  \n\tWITH (  \n\tLOCATION = 'test.parquet',  \n\tDATA_SOURCE = [data_{storage-account-name}_dfs_core_windows_net],  \n\tFILE_FORMAT = [SynapseParquetFormat]  \n\t)  \nGO  \n\n-- 9  \nSELECT TOP 100 * FROM TestTable  \nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "Test1",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 6')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT TOP (100) [BatchCode]\n,[SampleCode]\n,[AR_base_64_coded]\n FROM [dbo].[kompa]",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "TestDed",
+						"poolName": "TestDed"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/STRING_AGG')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
@@ -4963,96 +5246,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/WilserviceSprint2')]",
-			"type": "Microsoft.Synapse/workspaces/notebooks",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"nbformat": 4,
-				"nbformat_minor": 2,
-				"bigDataPool": {
-					"referenceName": "frost",
-					"type": "BigDataPoolReference"
-				},
-				"sessionProperties": {
-					"driverMemory": "28g",
-					"driverCores": 4,
-					"executorMemory": "28g",
-					"executorCores": 4,
-					"numExecutors": 2,
-					"conf": {
-						"spark.dynamicAllocation.enabled": "false",
-						"spark.dynamicAllocation.minExecutors": "2",
-						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "faa0b601-ae1d-4011-8645-4a078afb3571"
-					}
-				},
-				"metadata": {
-					"saveOutput": true,
-					"enableDebugMode": false,
-					"kernelspec": {
-						"name": "synapse_pyspark",
-						"display_name": "Synapse PySpark"
-					},
-					"language_info": {
-						"name": "r"
-					},
-					"a365ComputeOptions": {
-						"id": "/subscriptions/7b03814f-5f7f-40a4-96f4-625d301afef0/resourceGroups/rg-ingraphic-1/providers/Microsoft.Synapse/workspaces/syn-ingraphic-01/bigDataPools/frost",
-						"name": "frost",
-						"type": "Spark",
-						"endpoint": "https://syn-ingraphic-01.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/frost",
-						"auth": {
-							"type": "AAD",
-							"authResource": "https://dev.azuresynapse.net"
-						},
-						"sparkVersion": "3.3",
-						"nodeCount": 10,
-						"cores": 4,
-						"memory": 28
-					},
-					"sessionKeepAliveTimeout": 30
-				},
-				"cells": [
-					{
-						"cell_type": "code",
-						"source": [
-							"# Hvilken målestasjoner finnes det i Oslo\r\n",
-							"library(tidyverse)\r\n",
-							"\r\n",
-							"# Insert your own client ID here\r\n",
-							"client_id_secret <- mssparkutils.credentials.getSecret(\"FrostAPISecrets\", \"FrostAPI1\", \"AzureKeyVault1\")\r\n",
-							"endpoint <- paste0(\"https://\", client_id_secret, \"@frost.met.no/observations/v0.jsonld\")\r\n",
-							"\r\n",
-							"# Issue an HTTP GET request and extract JSON data\r\n",
-							"xs <- try(jsonlite::fromJSON(URLencode('https://frost.met.no/sources/v0.jsonld?types=SensorSystem&name=Oslo*'),flatten=T))"
-						],
-						"outputs": [],
-						"execution_count": 1
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							""
-						],
-						"outputs": [],
-						"execution_count": null
-					}
-				]
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/frost')]",
 			"type": "Microsoft.Synapse/workspaces/bigDataPools",
 			"apiVersion": "2019-06-01-preview",
@@ -5078,47 +5271,16 @@
 			"location": "norwayeast"
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/SQL script 2')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"name": "[concat(parameters('workspaceName'), '/TestDed')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"content": {
-					"query": "CREATE DATABASE mydbname\n\n-- 1  \nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'qwe@##@5324aSD127123g'  \nGO  \n  \n-- 2  \nCREATE DATABASE SCOPED CREDENTIAL WorkspaceIdentity WITH IDENTITY = 'Managed Identity'  \nGO  \n  \n-- 3  \nCREATE LOGIN TestUser WITH PASSWORD = 'abcdef123!@#'  \nGO  \n  \n-- 4  \nCREATE USER Test FOR LOGIN TestUser  \nGO  \n  \n-- 5  \nGRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::WorkspaceIdentity TO Test  \n      \n-- 6  \nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'data_{storage-account-name}_dfs_core_windows_net')   \n    CREATE EXTERNAL DATA SOURCE [data_{storage-account-name}_dfs_core_windows_net]   \n    WITH (  \n        LOCATION   = 'https://{storage-account-name}.dfs.core.windows.net/data',  \n        CREDENTIAL = WorkspaceIdentity   \n    )  \nGO  \n\n -- 7   \nIF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat')   \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat]   \n\tWITH ( FORMAT_TYPE = PARQUET)  \nGO  \n\n-- 8  \nCREATE EXTERNAL TABLE TestTable (  \n\t[Id] INT,  \n\t[FirstName] VARCHAR(7),  \n\t[Lastname] VARCHAR(38,18),  \n\t)  \n\tWITH (  \n\tLOCATION = 'test.parquet',  \n\tDATA_SOURCE = [data_{storage-account-name}_dfs_core_windows_net],  \n\tFILE_FORMAT = [SynapseParquetFormat]  \n\t)  \nGO  \n\n-- 9  \nSELECT TOP 100 * FROM TestTable  \nGO",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "mydbname",
-						"poolName": "Built-in"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
+				"annotations": []
 			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/AzureDataLakeStorage1')]",
-			"type": "Microsoft.Synapse/workspaces/linkedServices",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]",
-					"accountKey": {
-						"type": "SecureString",
-						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
-					}
-				},
-				"connectVia": {
-					"referenceName": "AutoResolveIntegrationRuntime",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
-			]
+			"dependsOn": [],
+			"location": "norwayeast"
 		}
 	]
 }
