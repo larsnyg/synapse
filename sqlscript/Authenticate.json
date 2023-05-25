@@ -1,6 +1,9 @@
 {
-	"name": "SQL script 2",
+	"name": "Authenticate",
 	"properties": {
+		"folder": {
+			"name": "Other"
+		},
 		"content": {
 			"query": "CREATE DATABASE mydbname\n\n-- 1  \nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'qwe@##@5324aSD127123g'  \nGO  \n  \n-- 2  \nCREATE DATABASE SCOPED CREDENTIAL WorkspaceIdentity WITH IDENTITY = 'Managed Identity'  \nGO  \n  \n-- 3  \nCREATE LOGIN TestUser WITH PASSWORD = 'abcdef123!@#'  \nGO  \n  \n-- 4  \nCREATE USER Test FOR LOGIN TestUser  \nGO  \n  \n-- 5  \nGRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::WorkspaceIdentity TO Test  \n      \n-- 6  \nIF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'data_{storage-account-name}_dfs_core_windows_net')   \n    CREATE EXTERNAL DATA SOURCE [data_{storage-account-name}_dfs_core_windows_net]   \n    WITH (  \n        LOCATION   = 'https://{storage-account-name}.dfs.core.windows.net/data',  \n        CREDENTIAL = WorkspaceIdentity   \n    )  \nGO  \n\n -- 7   \nIF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat')   \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat]   \n\tWITH ( FORMAT_TYPE = PARQUET)  \nGO  \n\n-- 8  \nCREATE EXTERNAL TABLE TestTable (  \n\t[Id] INT,  \n\t[FirstName] VARCHAR(7),  \n\t[Lastname] VARCHAR(38,18),  \n\t)  \n\tWITH (  \n\tLOCATION = 'test.parquet',  \n\tDATA_SOURCE = [data_{storage-account-name}_dfs_core_windows_net],  \n\tFILE_FORMAT = [SynapseParquetFormat]  \n\t)  \nGO  \n\n-- 9  \nSELECT TOP 100 * FROM TestTable  \nGO",
 			"metadata": {
