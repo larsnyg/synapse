@@ -3,54 +3,9 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Lookup parameters",
-				"type": "Lookup",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "JsonSource",
-						"storeSettings": {
-							"type": "AzureBlobFSReadSettings",
-							"recursive": true,
-							"enablePartitionDiscovery": false
-						},
-						"formatSettings": {
-							"type": "JsonReadSettings"
-						}
-					},
-					"dataset": {
-						"referenceName": "JSON",
-						"type": "DatasetReference",
-						"parameters": {
-							"FileName": "meta.json",
-							"Directory": {
-								"value": "@coalesce(null)",
-								"type": "Expression"
-							},
-							"Container": "meta"
-						}
-					}
-				}
-			},
-			{
 				"name": "Check Folder Exists",
 				"type": "GetMetadata",
-				"dependsOn": [
-					{
-						"activity": "Lookup parameters ",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -86,8 +41,8 @@
 				}
 			},
 			{
-				"name": "Download Raw",
-				"type": "IfCondition",
+				"name": "Lookup parameters",
+				"type": "Lookup",
 				"dependsOn": [
 					{
 						"activity": "Check Folder Exists",
@@ -96,159 +51,118 @@
 						]
 					}
 				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
 				"userProperties": [],
 				"typeProperties": {
-					"expression": {
-						"value": "@activity('Check Folder Exists').output.exists",
-						"type": "Expression"
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
 					},
-					"ifFalseActivities": [
-						{
-							"name": "Initialize",
-							"type": "ExecutePipeline",
-							"dependsOn": [],
-							"userProperties": [],
-							"typeProperties": {
-								"pipeline": {
-									"referenceName": "Download Complete History",
-									"type": "PipelineReference"
-								},
-								"waitOnCompletion": true
-							}
-						}
-					],
-					"ifTrueActivities": [
-						{
-							"name": "Update",
-							"type": "Copy",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
+					"dataset": {
+						"referenceName": "JSON",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": "meta.json",
+							"Directory": {
+								"value": "@coalesce(null)",
+								"type": "Expression"
 							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "RestSource",
-									"httpRequestTimeout": "00:01:40",
-									"requestInterval": "00.00:00:00.010",
-									"requestMethod": "GET",
-									"paginationRules": {
-										"supportRFC5988": "true"
-									}
-								},
-								"sink": {
-									"type": "JsonSink",
-									"storeSettings": {
-										"type": "AzureBlobFSWriteSettings"
-									},
-									"formatSettings": {
-										"type": "JsonWriteSettings"
-									}
-								},
-								"enableStaging": false,
-								"translator": {
-									"type": "TabularTranslator",
-									"mappings": [
-										{
-											"source": {
-												"path": "['sourceId']"
-											},
-											"sink": {
-												"path": "sourceId"
-											}
-										},
-										{
-											"source": {
-												"path": "['referenceTime']"
-											},
-											"sink": {
-												"path": "referenceTime"
-											}
-										},
-										{
-											"source": {
-												"path": "['observations'][0]['elementId']"
-											},
-											"sink": {
-												"path": "elementMin"
-											}
-										},
-										{
-											"source": {
-												"path": "['observations'][0]['value']"
-											},
-											"sink": {
-												"path": "Min"
-											}
-										},
-										{
-											"source": {
-												"path": "['observations'][1]['elementId']"
-											},
-											"sink": {
-												"path": "elementMax"
-											}
-										},
-										{
-											"source": {
-												"path": "['observations'][1]['value']"
-											},
-											"sink": {
-												"path": "Max"
-											}
-										}
-									],
-									"collectionReference": "$['data']"
-								}
-							},
-							"inputs": [
-								{
-									"referenceName": "FrostRestAPI",
-									"type": "DatasetReference",
-									"parameters": {
-										"sources": {
-											"value": "@concat('sources=', activity('Lookup parameters').output.firstRow.sources)",
-											"type": "Expression"
-										},
-										"referencetime": {
-											"value": "@concat('referencetime=', utcnow('yyyy-MM'), '/', getFutureTime(1, 'Month', 'yyyy-MM'))\n\n",
-											"type": "Expression"
-										},
-										"elements": {
-											"value": "@concat('elements=', activity('Lookup parameters').output.firstRow.elements)",
-											"type": "Expression"
-										}
-									}
-								}
-							],
-							"outputs": [
-								{
-									"referenceName": "JSON",
-									"type": "DatasetReference",
-									"parameters": {
-										"FileName": {
-											"value": "@concat(utcnow('yyyy-MM'), '.json')",
-											"type": "Expression"
-										},
-										"Directory": "raw_json",
-										"Container": "frost"
-									}
-								}
-							]
+							"Container": "meta"
 						}
-					]
+					}
 				}
 			},
 			{
-				"name": "Save to Parquet",
+				"name": "Copy data1_copy1",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Lookup parameters",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "FrostRestAPI",
+						"type": "DatasetReference",
+						"parameters": {
+							"sources": {
+								"value": "@concat('sources=', activity('Lookup parameters').output.firstRow.sources)",
+								"type": "Expression"
+							},
+							"referencetime": {
+								"value": "@concat('referencetime=', activity('Lookup parameters').output.firstRow.startDate, '/', utcNow('yyyy-MM-dd'))",
+								"type": "Expression"
+							},
+							"elements": {
+								"value": "@concat('elements=', activity('Lookup parameters').output.firstRow.elements)",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "JSON",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": "raw_data.json",
+							"Directory": "raw",
+							"Container": "frost"
+						}
+					}
+				]
+			},
+			{
+				"name": "Data flow1",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "Download Raw ",
+						"activity": "Copy data1_copy1",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -264,20 +178,8 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "JsonToParquet",
-						"type": "DataFlowReference",
-						"datasetParameters": {
-							"source1": {
-								"FileName": "*.json",
-								"Directory": "raw_json",
-								"Container": "frost"
-							},
-							"sink1": {
-								"Container": "frost",
-								"Directory": "business",
-								"FileName": "@coalesce(null)"
-							}
-						}
+						"referenceName": "FlattenFrost",
+						"type": "DataFlowReference"
 					},
 					"compute": {
 						"coreCount": 8,

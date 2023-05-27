@@ -3,158 +3,6 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "ForEach1",
-				"type": "ForEach",
-				"dependsOn": [
-					{
-						"activity": "Lookup parameters",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"items": {
-						"value": "@range(0, activity('Lookup parameters').output.firstRow.yearsHistory)",
-						"type": "Expression"
-					},
-					"activities": [
-						{
-							"name": "Copy data1",
-							"type": "Copy",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [
-								{
-									"name": "Source",
-									"value": "@{concat('v0.jsonld?', concat('sources=', activity('Lookup parameters').output.firstRow.sources), '&', concat('elements=', activity('Lookup parameters').output.firstRow.elements), '&', concat('referencetime=', subtractFromTime(utcnow(), add(item(), 1), 'Month', 'yyyy-MM'), '/', subtractFromTime(utcnow(), item(), 'Month', 'yyyy-MM')))}"
-								},
-								{
-									"name": "Destination",
-									"value": "raw-files/@{'data'}/@{concat(subtractFromTime(utcnow(), item(), 'Month', 'yyyy-MM'),'.json')}"
-								}
-							],
-							"typeProperties": {
-								"source": {
-									"type": "RestSource",
-									"httpRequestTimeout": "00:01:40",
-									"requestInterval": "00.00:00:00.010",
-									"requestMethod": "GET",
-									"paginationRules": {
-										"supportRFC5988": "true"
-									}
-								},
-								"sink": {
-									"type": "JsonSink",
-									"storeSettings": {
-										"type": "AzureBlobFSWriteSettings"
-									},
-									"formatSettings": {
-										"type": "JsonWriteSettings"
-									}
-								},
-								"enableStaging": false,
-								"translator": {
-									"type": "TabularTranslator",
-									"mappings": [
-										{
-											"source": {
-												"path": "['sourceId']"
-											},
-											"sink": {
-												"path": "sourceId"
-											}
-										},
-										{
-											"source": {
-												"path": "['referenceTime']"
-											},
-											"sink": {
-												"path": "referenceTime"
-											}
-										},
-										{
-											"source": {
-												"path": "['observations'][0]['elementId']"
-											},
-											"sink": {
-												"path": "elementMin"
-											}
-										},
-										{
-											"source": {
-												"path": "['observations'][0]['value']"
-											},
-											"sink": {
-												"path": "Min"
-											}
-										},
-										{
-											"source": {
-												"path": "['observations'][1]['elementId']"
-											},
-											"sink": {
-												"path": "elementMax"
-											}
-										},
-										{
-											"source": {
-												"path": "['observations'][1]['value']"
-											},
-											"sink": {
-												"path": "Max"
-											}
-										}
-									],
-									"collectionReference": "$['data']"
-								}
-							},
-							"inputs": [
-								{
-									"referenceName": "FrostRestAPI",
-									"type": "DatasetReference",
-									"parameters": {
-										"sources": {
-											"value": "@concat('sources=', activity('Lookup parameters').output.firstRow.sources)",
-											"type": "Expression"
-										},
-										"referencetime": {
-											"value": "@concat('referencetime=', subtractFromTime(utcnow(), add(item(), 1), 'Year', 'yyyy'), '/', subtractFromTime(utcnow(), item(), 'Year', 'yyyy'))",
-											"type": "Expression"
-										},
-										"elements": {
-											"value": "@concat('elements=', activity('Lookup parameters').output.firstRow.elements)",
-											"type": "Expression"
-										}
-									}
-								}
-							],
-							"outputs": [
-								{
-									"referenceName": "JSON",
-									"type": "DatasetReference",
-									"parameters": {
-										"FileName": {
-											"value": "@concat('data_before', utcNow('YYYY-mm-dd'), '.json')",
-											"type": "Expression"
-										},
-										"Directory": "raw_json",
-										"Container": "frost"
-									}
-								}
-							]
-						}
-					]
-				}
-			},
-			{
 				"name": "Lookup parameters",
 				"type": "Lookup",
 				"dependsOn": [],
@@ -191,6 +39,135 @@
 						}
 					}
 				}
+			},
+			{
+				"name": "Copy data1_copy1",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Lookup parameters",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "['sourceId']"
+								},
+								"sink": {
+									"path": "sourceId"
+								}
+							},
+							{
+								"source": {
+									"path": "['referenceTime']"
+								},
+								"sink": {
+									"path": "referenceTime"
+								}
+							},
+							{
+								"source": {
+									"path": "['observations'][0]['elementId']"
+								},
+								"sink": {
+									"path": "elementMin"
+								}
+							},
+							{
+								"source": {
+									"path": "['observations'][0]['value']"
+								},
+								"sink": {
+									"path": "Min"
+								}
+							},
+							{
+								"source": {
+									"path": "['observations'][1]['elementId']"
+								},
+								"sink": {
+									"path": "elementMax"
+								}
+							},
+							{
+								"source": {
+									"path": "['observations'][1]['value']"
+								},
+								"sink": {
+									"path": "Max"
+								}
+							}
+						],
+						"collectionReference": "$['data']"
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "FrostRestAPI",
+						"type": "DatasetReference",
+						"parameters": {
+							"sources": {
+								"value": "@concat('sources=', activity('Lookup parameters').output.firstRow.sources)",
+								"type": "Expression"
+							},
+							"referencetime": {
+								"value": "@concat('referencetime=', activity('Lookup parameters').output.firstRow.startDate, '/', utcNow('yyyy-MM-dd'))",
+								"type": "Expression"
+							},
+							"elements": {
+								"value": "@concat('elements=', activity('Lookup parameters').output.firstRow.elements)",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "JSON",
+						"type": "DatasetReference",
+						"parameters": {
+							"FileName": {
+								"value": "@concat(activity('Lookup parameters').output.firstRow.startDate,'_', utcNow('yyyy-MM-dd'), '.json')",
+								"type": "Expression"
+							},
+							"Directory": "raw_json",
+							"Container": "frost"
+						}
+					}
+				]
 			}
 		],
 		"folder": {
