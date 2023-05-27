@@ -142,7 +142,7 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"FileName": {
-											"value": "@concat('year_', item(), '.json')",
+											"value": "@concat('data_before', utcNow('YYYY-mm-dd'), '.json')",
 											"type": "Expression"
 										},
 										"Directory": "raw_json",
