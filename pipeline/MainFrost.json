@@ -179,11 +179,23 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "FlattenFrost",
-						"type": "DataFlowReference"
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"source1": {
+								"FileName": "coalesce(null)",
+								"Directory": "coalesce(null)",
+								"Container": "coalesce(null)"
+							},
+							"sink1": {
+								"Container": "coalesce(null)",
+								"Directory": "coalesce(null)",
+								"FileName": "coalesce(null)"
+							}
+						}
 					},
-					"compute": {
-						"coreCount": 8,
-						"computeType": "General"
+					"integrationRuntime": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
 					},
 					"traceLevel": "Fine"
 				}
